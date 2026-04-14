@@ -1,0 +1,12 @@
+packages:
+  - '.'
+  - 'github-pages'
+
+onlyBuiltDependencies:
+  - esbuild
+  - onnxruntime-node
+  - protobufjs
+  - sharp
+
+ignoredBuiltDependencies:
+  - '@biomejs/biome'
