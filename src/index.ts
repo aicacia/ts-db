@@ -48,6 +48,19 @@ export {
 
 // Adapters
 export { MemoryAdapter, MemorySingletonAdapter } from "./memoryAdapter.js";
+export type {
+	SubscriptionAdapter,
+	SubscriptionAdapterFactory,
+} from "./subscriptionManager.js";
+export { SubscriptionManager, createSubscriptionManager } from "./subscriptionManager.js";
+export type { SourceSubscription } from "./sourceSubscription.js";
+export { createSourceSubscription } from "./sourceSubscription.js";
+export type {
+	QueryExecutionPort,
+	QuerySubscriptionServiceConfig,
+	QuerySubscriptionService,
+} from "./querySubscriptionService.js";
+export { createQuerySubscriptionService } from "./querySubscriptionService.js";
 
 // Filter engine
 export {

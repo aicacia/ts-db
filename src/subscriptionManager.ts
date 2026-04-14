@@ -1,12 +1,15 @@
+import type { UnsubscribeFn } from "./types.js";
 import { toError } from "./utils.js";
 
-export interface AdapterLike<T> {
+export interface SubscriptionAdapter<T> {
   subscribe(
     onUpdate: (rows: T[]) => void,
     onError: (err: Error) => void,
-  ): () => void;
+  ): UnsubscribeFn;
   fetchSnapshot?: () => T[] | Promise<T[]>;
 }
+
+export type SubscriptionAdapterFactory<T> = () => SubscriptionAdapter<T>;
 
 type Subscriber<T> = {
   onUpdate: (rows: T[]) => void;
@@ -14,8 +17,8 @@ type Subscriber<T> = {
 };
 
 interface Entry<T> {
-  adapter?: AdapterLike<T>;
-  adapterUnsubscribe?: () => void;
+  adapter?: SubscriptionAdapter<T>;
+  adapterUnsubscribe?: UnsubscribeFn;
   subscribers: Set<Subscriber<T>>;
   lastResults: T[] | null;
 }
@@ -25,7 +28,7 @@ export class SubscriptionManager<T> {
 
   subscribe(opts: {
     id: string;
-    adapterFactory: () => AdapterLike<T>;
+    adapterFactory: SubscriptionAdapterFactory<T>;
     onUpdate: (rows: T[]) => void;
     onError?: (err: Error) => void;
   }): () => void {
