@@ -8,7 +8,7 @@
 	let search = $state('');
 	let query = $derived(
 		search
-			? recipesCollection.query().contains('title', search).orderBy('updatedAt', 'desc')
+			? recipesCollection.query().containsIgnoreCase('title', search.trim()).orderBy('updatedAt', 'desc')
 			: recipesCollection.query().orderBy('updatedAt', 'desc')
 	);
 
@@ -34,12 +34,16 @@
 				updatedAt: new Date()
 			});
 		} else {
-			await recipesCollection.create({
-				...payload,
+			const recipe: Recipe = {
 				id: Math.random().toString(36).substring(2),
+				title: payload.title || '',
+				description: payload.description || '',
+				ingredients: payload.ingredients || [],
+				instructions: payload.instructions || [],
 				createdAt: new Date(),
 				updatedAt: new Date()
-			});
+			};
+			await recipesCollection.create(recipe);
 		}
 		showForm = false;
 		editing = null;
