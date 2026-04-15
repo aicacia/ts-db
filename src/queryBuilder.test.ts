@@ -37,3 +37,31 @@ test("QueryBuilder: pure builder subscribe throws", (t) => {
 
 	t.end();
 });
+
+test("QueryBuilder: compileToFunction snapshots the query state", (t) => {
+	const query = createQueryBuilder<Recipe>().where(equal("status", "active"));
+	const fn = query.compileToFunction();
+
+	query.where(equal("status", "archived"));
+
+	const docs: Recipe[] = [
+		{ id: "1", name: "Pasta", status: "active", tags: ["quick"], prepTime: 20 },
+		{ id: "2", name: "Soup", status: "archived", tags: ["slow"], prepTime: 30 },
+	];
+
+	const results = fn(docs);
+
+	t.equal(results.length, 1, "Compiled function should preserve original snapshot filters");
+	t.equal(results[0].status, "active", "Compiled function should not be affected by later builder changes");
+	t.end();
+});
+
+test("QueryBuilder: toCTE returns a snapshot copy", (t) => {
+	const query = createQueryBuilder<Recipe>().where(equal("status", "active"));
+	const cte = query.toCTE();
+
+	query.orderBy("name");
+
+	t.notOk(cte.orderBy, "Snapshot CTE should not reflect later builder modifications");
+	t.end();
+});

@@ -30,6 +30,35 @@ interface Entry<T> {
 export class SubscriptionManager<T> {
   private _entries: Map<string, Entry<T>> = new Map();
 
+  private _copySubscribers(entry: Entry<T>): Subscriber<T>[] {
+    return Array.from(entry.subscribers.values());
+  }
+
+  private _dispatchSubscriberError(subscribers: Subscriber<T>[], error: Error): void {
+    let handlerFailure: unknown;
+    let missingErrorHandler = false;
+
+    for (const subscriber of subscribers) {
+      if (subscriber.onError) {
+        try {
+          subscriber.onError(error);
+        } catch (hErr) {
+          handlerFailure = hErr;
+        }
+      } else {
+        missingErrorHandler = true;
+      }
+    }
+
+    if (missingErrorHandler) {
+      throw error;
+    }
+
+    if (handlerFailure !== undefined && subscribers.length === 1) {
+      throw toError(handlerFailure);
+    }
+  }
+
   subscribe(opts: {
     id: string;
     adapterFactory: SubscriptionAdapterFactory<T>;
@@ -68,9 +97,8 @@ export class SubscriptionManager<T> {
       const internalUpdate = (rows: T[]) => {
         entry.lastResults = rows;
 
-        const subs = Array.from(entry.subscribers.values());
+        const subs = this._copySubscribers(entry);
 
-        // First, call onUpdate for all subscribers, capture the first error if any.
         let firstUpdateError: Error | undefined;
         for (const s of subs) {
           try {
@@ -82,57 +110,14 @@ export class SubscriptionManager<T> {
           }
         }
 
-        // If any onUpdate threw, dispatch that error to all subscribers' onError handlers
         if (firstUpdateError) {
-          let handlerFailure: unknown;
-          let missingErrorHandler = false;
-
-          for (const s of subs) {
-            if (s.onError) {
-              try {
-                s.onError(firstUpdateError);
-              } catch (hErr) {
-                handlerFailure = hErr;
-              }
-            } else {
-              missingErrorHandler = true;
-            }
-          }
-
-          if (missingErrorHandler) {
-            throw firstUpdateError;
-          }
-
-          if (handlerFailure !== undefined && entry.subscribers.size === 1) {
-            throw toError(handlerFailure);
-          }
+          this._dispatchSubscriberError(subs, firstUpdateError);
         }
       };
 
       const internalError = (err: Error) => {
-        let handlerFailure: unknown;
-        let missingErrorHandler = false;
-        const subs = Array.from(entry.subscribers.values());
-
-        for (const s of subs) {
-          if (s.onError) {
-            try {
-              s.onError(toError(err));
-            } catch (hErr) {
-              handlerFailure = hErr;
-            }
-          } else {
-            missingErrorHandler = true;
-          }
-        }
-
-        if (missingErrorHandler) {
-          throw err;
-        }
-
-        if (handlerFailure !== undefined && entry.subscribers.size === 1) {
-          throw toError(handlerFailure);
-        }
+        const subs = this._copySubscribers(entry);
+        this._dispatchSubscriberError(subs, toError(err));
       };
 
       // Start adapter subscription

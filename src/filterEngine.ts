@@ -80,6 +80,10 @@ function applyFiltersInternal<T>(
 	return filtered;
 }
 
+export function assertNever(value: never): never {
+	throw new Error(`Unexpected filter: ${String(value)}`);
+}
+
 export function applyFilter<T>(
 	filter: CTEFilter<T>,
 	doc: T,
@@ -117,25 +121,31 @@ export function applyFilter<T>(
 				return fuzzyContainsMatch(fieldValue, filter.value);
 			case "includes":
 				return Array.isArray(fieldValue) && fieldValue.includes(filter.value);
+			default:
+				return assertNever(filter as never);
 		}
 	}
 
 	if (filter.type === "logical") {
-		if (filter.operator === "and") {
-			for (const subFilter of filter.filters) {
-				if (!applyFilter(subFilter, doc, context)) {
-					return false;
+		switch (filter.operator) {
+			case "and": {
+				for (const subFilter of filter.filters) {
+					if (!applyFilter(subFilter, doc, context)) {
+						return false;
+					}
 				}
+				return true;
 			}
-			return true;
-		}
-		if (filter.operator === "or") {
-			for (const subFilter of filter.filters) {
-				if (applyFilter(subFilter, doc, context)) {
-					return true;
+			case "or": {
+				for (const subFilter of filter.filters) {
+					if (applyFilter(subFilter, doc, context)) {
+						return true;
+					}
 				}
+				return false;
 			}
-			return false;
+			default:
+				return assertNever(filter as never);
 		}
 	}
 
@@ -156,12 +166,12 @@ export function applyFilter<T>(
 				(cteDoc) => getFieldValue(cteDoc, filter.field!) === fieldValue,
 			);
 			return filter.operator === "in" ? existsInCTE : !existsInCTE;
-		} 
+		}
 		const existsInCTE = cteResults.includes(doc);
 		return filter.operator === "in" ? existsInCTE : !existsInCTE;
 	}
 
-	return false;
+	return assertNever(filter);
 }
 
 function applyFiltersWithContext<T>(
