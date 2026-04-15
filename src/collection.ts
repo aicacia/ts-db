@@ -2,13 +2,19 @@ import type { AdapterStatus, SourceAdapter, UnsubscribeFn } from "./types.js";
 import type { CTE } from "./cte.js";
 import { createQueryBuilder, type IQueryBuilder } from "./queryBuilder.js";
 import { createQuerySubscriptionService, type QuerySubscriptionService } from "./querySubscriptionService.js";
+import type { QueryExecutionPort } from "./querySubscriptionService.js";
 import type { SubscriptionManager } from "./subscriptionManager.js";
+import type { SourceSubscription } from "./sourceSubscription.js";
 
 export interface CollectionConfig<T> {
 	id: string;
 	source: SourceAdapter<T>;
 	keyOf: (doc: T) => string;
 	subscriptionManager?: SubscriptionManager<T>;
+	sourceSubscription?: SourceSubscription<T>;
+	queryExecutor?: QueryExecutionPort<T>;
+	keySerializer?: (cte: CTE<T>) => string;
+	querySubscriptionService?: QuerySubscriptionService<T>;
 }
 
 export interface ICollection<T> {
@@ -41,10 +47,15 @@ export class Collection<T> implements ICollection<T> {
 	constructor(config: CollectionConfig<T>) {
 		this.id = config.id;
 		this._source = config.source;
-		this._querySubscriptionService = createQuerySubscriptionService({
-			source: this._source,
-			subscriptionManager: config.subscriptionManager,
-		});
+		this._querySubscriptionService =
+			config.querySubscriptionService ??
+			createQuerySubscriptionService({
+				source: this._source,
+				sourceSubscription: config.sourceSubscription,
+				subscriptionManager: config.subscriptionManager,
+				queryExecutor: config.queryExecutor,
+				keySerializer: config.keySerializer,
+			});
 	}
 
 	async create(doc: T): Promise<void> {

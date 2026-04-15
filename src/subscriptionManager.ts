@@ -6,8 +6,12 @@ export interface SubscriptionAdapter<T> {
     onUpdate: (rows: T[]) => void,
     onError: (err: Error) => void,
   ): UnsubscribeFn;
-  fetchSnapshot?: () => T[] | Promise<T[]>;
+  getSnapshot?: () => T[];
 }
+
+export type SnapshotSubscriptionAdapter<T> = SubscriptionAdapter<T> & {
+  getSnapshot(): T[];
+};
 
 export type SubscriptionAdapterFactory<T> = () => SubscriptionAdapter<T>;
 
@@ -166,6 +170,33 @@ export class SubscriptionManager<T> {
         this._entries.delete(id);
       }
     };
+  }
+
+  getSnapshot(id: string): T[] | null {
+    const entry = this._entries.get(id);
+    if (!entry) {
+      return null;
+    }
+
+    if (entry.lastResults !== null) {
+      return entry.lastResults;
+    }
+
+    if (!entry.adapter) {
+      return null;
+    }
+
+    const snapshotProvider = entry.adapter.getSnapshot;
+
+    if (!snapshotProvider) {
+      return null;
+    }
+
+    try {
+      return snapshotProvider.call(entry.adapter);
+    } catch {
+      return null;
+    }
   }
 }
 

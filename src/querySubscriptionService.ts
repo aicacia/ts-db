@@ -1,10 +1,11 @@
 import type { SourceAdapter, UnsubscribeFn } from "./types.js";
-import { getCTEIdentity, type CTE } from "./cte.js";
+import { getCTEIdentity } from "./queryIdentity.js";
+import type { CTE } from "./cte.js";
 import { toError } from "./utils.js";
 import {
 	createSubscriptionManager,
-	type SubscriptionAdapter,
 	type SubscriptionManager,
+	type SubscriptionAdapter,
 } from "./subscriptionManager.js";
 import type { SourceSubscription } from "./sourceSubscription.js";
 import { createSourceSubscription } from "./sourceSubscription.js";
@@ -14,12 +15,13 @@ import type {
 } from "./queryBuilder.js";
 import type { QueryExecutionPort } from "./queryExecution.js";
 import { createDefaultQueryExecutionPort } from "./queryExecution.js";
+import { createQuerySubscriptionAdapter } from "./querySubscriptionAdapter.js";
 
 export type { QueryExecutionPort } from "./queryExecution.js";
 
 export interface QuerySubscriptionServiceConfig<T> {
 	source?: SourceAdapter<T>;
-	sourceSubscription?: SourceSubscription<T>;
+	sourceSubscription?: SubscriptionAdapter<T>;
 	subscriptionManager?: SubscriptionManager<T>;
 	queryExecutor?: QueryExecutionPort<T>;
 	keySerializer?: (cte: CTE<T>) => string;
@@ -33,46 +35,6 @@ export interface QuerySubscriptionService<T> {
 	createSubscription(cte: CTE<T>): QuerySubscriptionResult<T>;
 	fetchSnapshot(cte: CTE<T>): T[];
 }
-
-export const createQuerySubscriptionAdapter = <T>(
-	cte: CTE<T>,
-	sourceSubscription: SourceSubscription<T>,
-	queryExecutor: QueryExecutionPort<T>,
-): SubscriptionAdapter<T> => {
-	return {
-		subscribe(onUpdate, onError) {
-			return sourceSubscription.subscribe(
-				(docs) => {
-					let results: T[];
-					try {
-						results = queryExecutor.execute(cte, [...docs]);
-					} catch (err) {
-						try {
-							onError(toError(err));
-						} catch (e) {
-							throw toError(e);
-						}
-						return;
-					}
-
-					try {
-						onUpdate(results);
-					} catch (uErr) {
-						try {
-							onError(toError(uErr));
-						} catch (e) {
-							throw toError(e);
-						}
-					}
-				},
-				onError,
-			);
-		},
-
-		fetchSnapshot: () =>
-			queryExecutor.execute(cte, [...sourceSubscription.fetchSnapshot()]),
-	};
-};
 
 export function createQuerySubscriptionService<T>(
 	config: QuerySubscriptionServiceConfig<T>,
@@ -115,9 +77,15 @@ export function createQuerySubscriptionService<T>(
 		createSubscription,
 
 		fetchSnapshot(cte: CTE<T>) {
-			return queryExecutor.execute(cte, [
-				...sourceSubscription.fetchSnapshot(),
-			]);
+			const subscriptionKey = serializeKey(cte);
+			const snapshot = subscriptionManager.getSnapshot(subscriptionKey);
+			if (snapshot !== null) {
+				return snapshot;
+			}
+
+			const sourceDocs = sourceSubscription.getSnapshot?.() ?? []
+
+			return queryExecutor.execute(cte, [...sourceDocs]);
 		},
 	};
 }

@@ -1,13 +1,8 @@
 import type { SourceAdapter, UnsubscribeFn } from "./types.js";
+import type { SnapshotSubscriptionAdapter } from "./subscriptionManager.js";
 import { toError } from "./utils.js";
 
-export interface SourceSubscription<T> {
-	subscribe(
-		onUpdate: (docs: T[]) => void,
-		onError: (error: Error) => void,
-	): UnsubscribeFn;
-	fetchSnapshot(): T[];
-}
+export interface SourceSubscription<T> extends SnapshotSubscriptionAdapter<T> {}
 
 export function createSourceSubscription<T>(
 	source: SourceAdapter<T>,
@@ -110,7 +105,7 @@ export function createSourceSubscription<T>(
 			};
 		},
 
-		fetchSnapshot() {
+		getSnapshot() {
 			return [...currentDocs];
 		},
 	};

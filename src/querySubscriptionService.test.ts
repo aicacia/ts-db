@@ -119,6 +119,33 @@ test("QuerySubscriptionService: direct subscribe() shorthand works", (t) => {
 	t.end();
 });
 
+test("QuerySubscriptionService: fetchSnapshot uses cached query results when subscription exists", (t) => {
+	const { adapter, emit } = createInMemorySource();
+	const service = createQuerySubscriptionService({ source: adapter });
+
+	const cte: CTE<Recipe> = {
+		version: "1.0",
+		filters: [equal("status", "active")],
+	};
+
+	const updates: Recipe[][] = [];
+	const unsub = service.createSubscription(cte)({
+		onUpdate: (docs) => updates.push([...docs]),
+		onError: () => t.fail("unexpected error"),
+	});
+
+	emit([
+		{ id: "1", name: "Pasta", status: "active" },
+		{ id: "2", name: "Soup", status: "archived" },
+	]);
+
+	t.equal(updates.length, 2, "Should receive update after source change");
+	t.deepEqual(service.fetchSnapshot(cte).map((doc) => doc.id), ["1"], "Should use cached query results from subscription manager");
+
+	unsub();
+	t.end();
+});
+
 test("QuerySubscriptionService: shares raw source subscription across subscribers", (t) => {
 	let subscribeCalls = 0;
 
@@ -207,7 +234,7 @@ test("QuerySubscriptionService: custom queryExecutor is used", (t) => {
 
 test("QuerySubscriptionService: custom sourceSubscription is used", (t) => {
 	let subscribeCalls = 0;
-	let fetchSnapshotCalls = 0;
+	let getSnapshotCalls = 0;
 
 	const service = createQuerySubscriptionService({
 		sourceSubscription: {
@@ -218,8 +245,8 @@ test("QuerySubscriptionService: custom sourceSubscription is used", (t) => {
 					/* noop */
 				};
 			},
-			fetchSnapshot() {
-				fetchSnapshotCalls += 1;
+			getSnapshot() {
+				getSnapshotCalls += 1;
 				return [{ id: "1", name: "Pasta", status: "active" }];
 			},
 		},
@@ -227,6 +254,11 @@ test("QuerySubscriptionService: custom sourceSubscription is used", (t) => {
 
 	const cte: CTE<Recipe> = { version: "1.0" };
 	const updates: Recipe[][] = [];
+
+t.equal(getSnapshotCalls, 0, "Should not call sourceSubscription snapshot before use");
+
+t.deepEqual(service.fetchSnapshot(cte).map((doc) => doc.id), ["1"]);
+	t.equal(getSnapshotCalls, 1, "Should delegate snapshot fetch to the provided sourceSubscription when no subscription exists");
 
 	const unsub = service.createSubscription(cte)({
 		onUpdate: (docs) => updates.push([...docs]),
@@ -237,7 +269,7 @@ test("QuerySubscriptionService: custom sourceSubscription is used", (t) => {
 	t.equal(updates.length, 1, "Should receive initial query results immediately");
 	t.deepEqual(updates[0].map((doc) => doc.id), ["1"]);
 	t.deepEqual(service.fetchSnapshot(cte).map((doc) => doc.id), ["1"]);
-	t.equal(fetchSnapshotCalls, 1, "Should delegate snapshot fetch to the provided sourceSubscription");
+	t.equal(getSnapshotCalls, 1, "Should use cached query results after subscription exists");
 
 	unsub();
 	t.end();
