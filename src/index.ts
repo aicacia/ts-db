@@ -21,7 +21,7 @@ export type {
 	QueryCompiler,
 	QuerySubscriptionResult,
 } from "./queryBuilder.js";
-export { QueryBuilder } from "./queryBuilder.js";
+export { QueryBuilder, createQueryBuilder } from "./queryBuilder.js";
 
 // CTE types and operations
 export type { CTE, CTEFilter, CTEOrderBy } from "./cte.js";

@@ -1,10 +1,6 @@
 import type { AdapterStatus, SourceAdapter, UnsubscribeFn } from "./types.js";
 import type { CTE } from "./cte.js";
-import {
-	QueryBuilder,
-	type IQueryBuilder,
-	type QuerySubscriptionResult,
-} from "./queryBuilder.js";
+import { createQueryBuilder, type IQueryBuilder } from "./queryBuilder.js";
 import { createQuerySubscriptionService, type QuerySubscriptionService } from "./querySubscriptionService.js";
 import type { SubscriptionManager } from "./subscriptionManager.js";
 
@@ -21,6 +17,10 @@ export interface ICollection<T> {
 	update(id: string, changes: Partial<T>): Promise<void>;
 	delete(id: string): Promise<void>;
 	query(): IQueryBuilder<T>;
+	subscribe(
+		onUpdate: (docs: T[]) => void,
+		onError?: (error: Error) => void,
+	): UnsubscribeFn;
 	getStatus(): AdapterStatus;
 }
 
@@ -32,6 +32,7 @@ export interface ICollection<T> {
  * This allows multiple user subscriptions to the same query to share a single adapter subscription,
  * improving efficiency and reducing redundant filtering operations.
  */
+
 export class Collection<T> implements ICollection<T> {
 	readonly id: string;
 	private _source: SourceAdapter<T>;
@@ -59,9 +60,16 @@ export class Collection<T> implements ICollection<T> {
 	}
 
 	query(): IQueryBuilder<T> {
-		return new QueryBuilder((cte: CTE<T>) => {
+		return createQueryBuilder((cte: CTE<T>) => {
 			return this._querySubscriptionService.createSubscription(cte);
 		});
+	}
+
+	subscribe(
+		onUpdate: (docs: T[]) => void,
+		onError?: (error: Error) => void,
+	): UnsubscribeFn {
+		return this.query().subscribe(onUpdate, onError);
 	}
 
 	getStatus(): AdapterStatus {

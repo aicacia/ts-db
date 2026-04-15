@@ -210,9 +210,17 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 	private _cte: CTE<T>;
 	private _compile: QueryCompiler<T>;
 
-	constructor(compile: QueryCompiler<T>) {
+	constructor(compile?: QueryCompiler<T>) {
 		this._cte = createCTE();
-		this._compile = compile;
+		this._compile =
+			compile ??
+			((cte) => {
+				return () => {
+					throw new Error(
+						"QueryBuilder.subscribe requires a runtime query compiler",
+					);
+				};
+			});
 	}
 
 	where(filter: CTEFilter<T>): IQueryBuilder<T> {
@@ -349,4 +357,8 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 		const cte = this._cte;
 		return (docs: T[]) => applyCTE(cte, docs);
 	}
+}
+
+export function createQueryBuilder<T>(compile?: QueryCompiler<T>): QueryBuilder<T> {
+	return new QueryBuilder<T>(compile);
 }

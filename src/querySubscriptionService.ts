@@ -1,9 +1,9 @@
 import type { SourceAdapter, UnsubscribeFn } from "./types.js";
 import { getCTEIdentity, type CTE } from "./cte.js";
-import { applyCTE } from "./filterEngine.js";
 import { toError } from "./utils.js";
 import {
 	createSubscriptionManager,
+	type SubscriptionAdapter,
 	type SubscriptionManager,
 } from "./subscriptionManager.js";
 import type { SourceSubscription } from "./sourceSubscription.js";
@@ -12,10 +12,10 @@ import type {
 	QuerySubscriptionCallback,
 	QuerySubscriptionResult,
 } from "./queryBuilder.js";
+import type { QueryExecutionPort } from "./queryExecution.js";
+import { createDefaultQueryExecutionPort } from "./queryExecution.js";
 
-export interface QueryExecutionPort<T> {
-	execute(cte: CTE<T>, docs: T[]): T[];
-}
+export type { QueryExecutionPort } from "./queryExecution.js";
 
 export interface QuerySubscriptionServiceConfig<T> {
 	source?: SourceAdapter<T>;
@@ -34,6 +34,46 @@ export interface QuerySubscriptionService<T> {
 	fetchSnapshot(cte: CTE<T>): T[];
 }
 
+export const createQuerySubscriptionAdapter = <T>(
+	cte: CTE<T>,
+	sourceSubscription: SourceSubscription<T>,
+	queryExecutor: QueryExecutionPort<T>,
+): SubscriptionAdapter<T> => {
+	return {
+		subscribe(onUpdate, onError) {
+			return sourceSubscription.subscribe(
+				(docs) => {
+					let results: T[];
+					try {
+						results = queryExecutor.execute(cte, [...docs]);
+					} catch (err) {
+						try {
+							onError(toError(err));
+						} catch (e) {
+							throw toError(e);
+						}
+						return;
+					}
+
+					try {
+						onUpdate(results);
+					} catch (uErr) {
+						try {
+							onError(toError(uErr));
+						} catch (e) {
+							throw toError(e);
+						}
+					}
+				},
+				onError,
+			);
+		},
+
+		fetchSnapshot: () =>
+			queryExecutor.execute(cte, [...sourceSubscription.fetchSnapshot()]),
+	};
+};
+
 export function createQuerySubscriptionService<T>(
 	config: QuerySubscriptionServiceConfig<T>,
 ): QuerySubscriptionService<T> {
@@ -47,53 +87,16 @@ export function createQuerySubscriptionService<T>(
 		config.sourceSubscription ?? createSourceSubscription(config.source!);
 	const subscriptionManager =
 		config.subscriptionManager ?? createSubscriptionManager<T>();
-	const queryExecutor: QueryExecutionPort<T> = config.queryExecutor ?? {
-		execute(cte: CTE<T>, docs: T[]) {
-			return applyCTE(cte, docs);
-		},
-	};
+	const queryExecutor: QueryExecutionPort<T> =
+		config.queryExecutor ?? createDefaultQueryExecutionPort<T>();
 	const serializeKey = config.keySerializer ?? getCTEIdentity;
 
 	const createSubscription = (cte: CTE<T>): QuerySubscriptionResult<T> => {
 		return (callbacks) => {
 			const subscriptionKey = serializeKey(cte);
 
-			const adapterFactory = () => {
-				return {
-					subscribe(
-						onUpdate: (rows: T[]) => void,
-						onError: (error: Error) => void,
-					) {
-						return sourceSubscription.subscribe((docs) => {
-							let results: T[];
-							try {
-								results = queryExecutor.execute(cte, [...docs]);
-							} catch (err) {
-								try {
-									onError(toError(err));
-								} catch (e) {
-									throw toError(e);
-								}
-								return;
-							}
-
-							try {
-								onUpdate(results);
-							} catch (uErr) {
-								try {
-									onError(toError(uErr));
-								} catch (e) {
-									throw toError(e);
-								}
-							}
-						}, onError);
-					},
-					fetchSnapshot: () =>
-						queryExecutor.execute(cte, [
-							...sourceSubscription.fetchSnapshot(),
-						]),
-				};
-			};
+			const adapterFactory = () =>
+				createQuerySubscriptionAdapter(cte, sourceSubscription, queryExecutor);
 
 			return subscriptionManager.subscribe({
 				id: subscriptionKey,
