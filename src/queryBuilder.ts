@@ -1,4 +1,5 @@
 import type { FieldPath, UnsubscribeFn } from "./types.js";
+import type { ICollection } from "./collection.js";
 import {
 	type CTE,
 	type CTEComparisonOperator,
@@ -89,10 +90,66 @@ function cloneCTE<T>(cte: CTE<T>): CTE<T> {
 	};
 }
 
+function computeJoinIndex(
+	rightDocs: unknown[],
+	rightKey: (doc: unknown) => unknown,
+): Map<string, unknown[]> {
+	const index = new Map<string, unknown[]>();
+
+	for (const doc of rightDocs) {
+		const rawKey = rightKey(doc);
+		const key = rawKey === null || rawKey === undefined ? "" : String(rawKey);
+		const bucket = index.get(key) ?? [];
+		bucket.push(doc);
+		index.set(key, bucket);
+	}
+
+	return index;
+}
+
+function buildJoinIndexes<T>(
+	joins: JoinConfig<T>[],
+	rightDocs: unknown[][],
+) {
+	return joins.map((join, index) =>
+		computeJoinIndex(rightDocs[index] ?? [], join.rightKey),
+	);
+}
+
+function applyJoins<T>(
+	docs: T[],
+	joins: JoinConfig<T>[],
+	rightDocs: unknown[][],
+): T[] {
+	const indexes = buildJoinIndexes(joins, rightDocs);
+
+	return docs.filter((doc) => {
+		for (const [index, join] of joins.entries()) {
+			const leftKey = join.leftKey(doc);
+			const lookupKey = leftKey === null || leftKey === undefined ? "" : String(leftKey);
+			const matches = indexes[index]?.get(lookupKey) ?? [];
+
+			if (join.type === "inner" && matches.length === 0) {
+				return false;
+			}
+		}
+		return true;
+	});
+}
+
 /**
  * Order direction
  */
 export type OrderDirection = "asc" | "desc";
+
+export type JoinType = "inner" | "left";
+
+export interface JoinConfig<Left> {
+	collection: ICollection<unknown>;
+	leftKey: (doc: Left) => unknown;
+	rightKey: (doc: unknown) => unknown;
+	type: JoinType;
+}
 
 /**
  * Query builder interface
@@ -176,6 +233,19 @@ export interface IQueryBuilder<T> {
 	 * Add logical OR filter over provided filters.
 	 */
 	or(...filters: CTEFilter<T>[]): IQueryBuilder<T>;
+
+	/**
+	 * Join another collection to the root query.
+	 *
+	 * The left-side selector is required and the right-side key selector
+	 * is optional when the joined collection already exposes a key.
+	 */
+	join<Right>(
+		rightCollection: ICollection<Right>,
+		leftKey: (doc: T) => unknown,
+		rightKey?: (doc: Right) => unknown,
+		type?: JoinType,
+	): IQueryBuilder<T>;
 
 	/**
 	 * Order results by field
@@ -277,6 +347,7 @@ export type QuerySubscriptionResult<T> = (
 export class QueryBuilder<T> implements IQueryBuilder<T> {
 	private _cte: CTE<T>;
 	private _compile: QueryCompiler<T>;
+	private _joins: JoinConfig<T>[] = [];
 
 	constructor(compile?: QueryCompiler<T>) {
 		this._cte = createCTE();
@@ -359,6 +430,22 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 		return this.where(createOrFilter(...filters));
 	}
 
+	join<Right>(
+		rightCollection: ICollection<Right>,
+		leftKey: (doc: T) => unknown,
+		rightKey?: (doc: Right) => unknown,
+		type: JoinType = "inner",
+	): IQueryBuilder<T> {
+		const resolvedRightKey = rightKey ?? rightCollection.getKeyOf();
+		this._joins.push({
+			collection: rightCollection as ICollection<unknown>,
+			leftKey,
+			rightKey: resolvedRightKey as (doc: unknown) => unknown,
+			type,
+		});
+		return this;
+	}
+
 	orderBy(
 		field: FieldPath<T>,
 		direction: OrderDirection = "asc",
@@ -423,10 +510,46 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 				throw error;
 			});
 
-		return this._compile(this._cte)({
-			onUpdate,
+		if (this._joins.length === 0) {
+			return this._compile(this._cte)({
+				onUpdate,
+				onError: errorHandler,
+			});
+		}
+
+		const rootSubscribe = this._compile(this._cte);
+		let rootDocs: T[] = [];
+		const rightRows = this._joins.map(() => [] as unknown[]);
+
+		const emit = () => {
+			const results = applyJoins(rootDocs, this._joins, rightRows);
+			onUpdate(results);
+		};
+
+		const rootUnsub = rootSubscribe({
+			onUpdate(docs) {
+				rootDocs = docs;
+				emit();
+			},
 			onError: errorHandler,
 		});
+
+		const joinUnsubs = this._joins.map((join, index) =>
+			join.collection.query().subscribe(
+				(docs) => {
+					rightRows[index] = docs;
+					emit();
+				},
+				errorHandler,
+			),
+		);
+
+		return () => {
+			rootUnsub();
+			for (const unsub of joinUnsubs) {
+				unsub();
+			}
+		};
 	}
 
 	toCTE(): CTE<T> {
@@ -434,6 +557,10 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 	}
 
 	compileToFunction(): (docs: T[]) => T[] {
+		if (this._joins.length > 0) {
+			throw new Error("compileToFunction does not support joins");
+		}
+
 		const cte = cloneCTE(this._cte);
 		return (docs: T[]) => applyCTE(cte, docs);
 	}

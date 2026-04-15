@@ -1,6 +1,7 @@
 import test from "tape";
 import { createCollection } from "./collection.js";
 import { createQueryBuilder } from "./queryBuilder.js";
+import { MemoryAdapter } from "./memoryAdapter.js";
 import type { SourceAdapter } from "./types.js";
 import type {
 	QuerySubscriptionService,
@@ -182,6 +183,117 @@ test("Collection: allows injected QueryExecutionPort", (t) => {
 
 	t.equal(updates.length, 1, "Should receive initial query result");
 	t.equal(updates[0].length, 1, "Should apply injected query executor");
+	unsub();
+	t.end();
+});
+
+test("Collection query: join filters by matching root collection to joined collection", (t) => {
+	interface RecipeWithItem {
+		id: string;
+		name: string;
+		itemId: string;
+	}
+
+	interface Item {
+		id: string;
+		name: string;
+	}
+
+	const recipesAdapter = new MemoryAdapter<RecipeWithItem>("id", [
+		{ id: "1", name: "Pancakes", itemId: "a" },
+		{ id: "2", name: "Omelet", itemId: "b" },
+	]);
+
+	const itemsAdapter = new MemoryAdapter<Item>("id", [
+		{ id: "a", name: "Flour" },
+	]);
+
+	const recipes = createCollection({
+		id: "recipes",
+		source: recipesAdapter,
+		keyOf: (doc) => doc.id,
+	});
+
+	const items = createCollection({
+		id: "items",
+		source: itemsAdapter,
+		keyOf: (doc) => doc.id,
+	});
+
+	const results: RecipeWithItem[] = [];
+	const unsub = recipes.query()
+		.join(items, (recipe) => recipe.itemId)
+		.subscribe(
+			(docs) => results.push(...docs),
+			() => t.fail("unexpected error"),
+		);
+
+	t.equal(results.length, 1, "Should return only matching root documents");
+	t.equal(results[0].id, "1", "Should match the joined item key");
+	unsub();
+	t.end();
+});
+
+test("Collection query: join supports multiple root-level joins", (t) => {
+	interface RecipeWithItemSupplier {
+		id: string;
+		name: string;
+		itemId: string;
+		supplierId: string;
+	}
+
+	interface Item {
+		id: string;
+		name: string;
+	}
+
+	interface Supplier {
+		id: string;
+		name: string;
+	}
+
+	const recipesAdapter = new MemoryAdapter<RecipeWithItemSupplier>("id", [
+		{ id: "1", name: "Pasta", itemId: "x", supplierId: "s1" },
+		{ id: "2", name: "Salad", itemId: "y", supplierId: "s2" },
+	]);
+
+	const itemsAdapter = new MemoryAdapter<Item>("id", [
+		{ id: "x", name: "Tomato" },
+	]);
+
+	const suppliersAdapter = new MemoryAdapter<Supplier>("id", [
+		{ id: "s1", name: "Grower" },
+	]);
+
+	const recipes = createCollection({
+		id: "recipes",
+		source: recipesAdapter,
+		keyOf: (doc) => doc.id,
+	});
+
+	const items = createCollection({
+		id: "items",
+		source: itemsAdapter,
+		keyOf: (doc) => doc.id,
+	});
+
+	const suppliers = createCollection({
+		id: "suppliers",
+		source: suppliersAdapter,
+		keyOf: (doc) => doc.id,
+	});
+
+	const results: RecipeWithItemSupplier[] = [];
+	const unsub = recipes.query()
+		.join(items, (recipe) => recipe.itemId)
+		.join(suppliers, (recipe) => recipe.supplierId)
+		.subscribe(
+			(docs) => results.push(...docs),
+			() => t.fail("unexpected error"),
+		);
+
+	t.equal(results.length, 1, "Should return only documents matching all joins");
+	t.equal(results[0].id, "1", "Should return the root doc that matches every join");
 	unsub();
 	t.end();
 });

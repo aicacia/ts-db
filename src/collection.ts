@@ -28,6 +28,7 @@ export interface ICollection<T> {
 		onError?: (error: Error) => void,
 	): UnsubscribeFn;
 	getStatus(): AdapterStatus;
+	getKeyOf(): (doc: T) => string;
 }
 
 /**
@@ -43,10 +44,12 @@ export class Collection<T> implements ICollection<T> {
 	readonly id: string;
 	private _source: SourceAdapter<T>;
 	private _querySubscriptionService: QuerySubscriptionService<T>;
+	private _keyOf: (doc: T) => string;
 
 	constructor(config: CollectionConfig<T>) {
 		this.id = config.id;
 		this._source = config.source;
+		this._keyOf = config.keyOf;
 		this._querySubscriptionService =
 			config.querySubscriptionService ??
 			createQuerySubscriptionService({
@@ -83,6 +86,10 @@ export class Collection<T> implements ICollection<T> {
 
 	getStatus(): AdapterStatus {
 		return this._source.getStatus();
+	}
+
+	getKeyOf(): (doc: T) => string {
+		return this._keyOf;
 	}
 
 }
