@@ -106,7 +106,9 @@ export function applyFilter<T>(
 			case "lessThanOrEqual":
 				return (fieldValue as number) <= (filter.value as number);
 			case "in":
-				return (filter.value as unknown[]).includes(fieldValue);
+				return Array.isArray(filter.value)
+					? filter.value.includes(fieldValue)
+					: false;
 			case "contains": {
 				const haystack = toSearchString(fieldValue);
 				const needle = toSearchString(filter.value);
