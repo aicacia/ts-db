@@ -4,7 +4,7 @@ import type {
 	SourceAdapter,
 	UnsubscribeFn,
 } from "./types.js";
-import { toError } from "./utils.js";
+import { safeInvoke, toError } from "./utils.js";
 
 interface SubscriptionEntry<T> {
 	onUpdate: (docs: T[]) => void;
@@ -42,11 +42,9 @@ export class MemoryAdapter<T extends Record<string, any>>
 
 		this._subscriptions.push(entry);
 
-		try {
-			const allDocs = Array.from(this._documents.values());
-			onUpdate(allDocs);
-		} catch (error) {
-			onError(toError(error));
+		const error = safeInvoke(onUpdate, Array.from(this._documents.values()), onError);
+		if (error) {
+			throw error;
 		}
 
 		return () => {
@@ -105,10 +103,9 @@ export class MemoryAdapter<T extends Record<string, any>>
 		const allDocs = Array.from(this._documents.values());
 
 		for (const entry of this._subscriptions) {
-			try {
-				entry.onUpdate(allDocs);
-			} catch (error) {
-				entry.onError(toError(error));
+			const error = safeInvoke(entry.onUpdate, allDocs, entry.onError);
+			if (error) {
+				throw error;
 			}
 		}
 	}
@@ -140,10 +137,9 @@ export class MemorySingletonAdapter<T> implements SingletonSourceAdapter<T> {
 
 		this._subscriptions.push(entry);
 
-		try {
-			onUpdate(this._value);
-		} catch (error) {
-			onError(toError(error));
+		const error = safeInvoke(onUpdate, this._value, onError);
+		if (error) {
+			throw error;
 		}
 
 		return () => {
@@ -184,10 +180,9 @@ export class MemorySingletonAdapter<T> implements SingletonSourceAdapter<T> {
 
 	private _notifySubscribers(): void {
 		for (const entry of this._subscriptions) {
-			try {
-				entry.onUpdate(this._value);
-			} catch (error) {
-				entry.onError(toError(error));
+			const error = safeInvoke(entry.onUpdate, this._value, entry.onError);
+			if (error) {
+				throw error;
 			}
 		}
 	}

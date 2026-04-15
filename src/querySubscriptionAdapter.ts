@@ -1,7 +1,7 @@
 import type { SubscriptionAdapter } from "./subscriptionManager.js";
 import type { QueryExecutionPort } from "./queryExecution.js";
 import type { CTE } from "./cte.js";
-import { toError } from "./utils.js";
+import { safeInvoke, toError } from "./utils.js";
 
 export const createQuerySubscriptionAdapter = <T>(
 	cte: CTE<T>,
@@ -24,14 +24,9 @@ export const createQuerySubscriptionAdapter = <T>(
 						return;
 					}
 
-					try {
-						onUpdate(results);
-					} catch (uErr) {
-						try {
-							onError(toError(uErr));
-						} catch (e) {
-							throw toError(e);
-						}
+					const updateError = safeInvoke(onUpdate, results, onError);
+					if (updateError) {
+						throw updateError;
 					}
 				},
 				onError,

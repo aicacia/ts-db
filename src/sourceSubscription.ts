@@ -1,6 +1,6 @@
 import type { SourceAdapter, UnsubscribeFn } from "./types.js";
 import type { SnapshotSubscriptionAdapter } from "./subscriptionManager.js";
-import { toError } from "./utils.js";
+import { safeInvoke, toError } from "./utils.js";
 
 export interface SourceSubscription<T> extends SnapshotSubscriptionAdapter<T> {}
 
@@ -33,24 +33,14 @@ export function createSourceSubscription<T>(
 
 	function notifyListeners(docs: T[]): void {
 		for (const listener of Array.from(listeners)) {
-			try {
-				listener.onUpdate(docs);
-			} catch (err) {
-				try {
-					listener.onError(toError(err));
-				} catch {
-					// swallow if listener error handler throws
-				}
-			}
+			safeInvoke(listener.onUpdate, docs, listener.onError, true);
 		}
 	}
 
 	function notifyError(error: Error): void {
 		for (const listener of Array.from(listeners)) {
-			try {
-				listener.onError(toError(error));
-			} catch {
-				// swallow listener error handler failures
+			if (listener.onError) {
+				safeInvoke(listener.onError, toError(error), undefined, true);
 			}
 		}
 	}

@@ -145,3 +145,42 @@ test("SourceSubscription: propagates adapter errors to subscribers", (t) => {
 	t.true(didError, "Error callback should be invoked");
 	t.end();
 });
+
+test("SourceSubscription: routes subscriber update errors to listener error handlers", (t) => {
+	let onUpdate: ((docs: Recipe[]) => void) | null = null;
+	let onError: ((error: Error) => void) | null = null;
+
+	const adapter: SourceAdapter<Recipe> = {
+		subscribe(update, error) {
+			onUpdate = update;
+			onError = error;
+			return () => {
+				/* noop */
+			};
+		},
+		async create() {},
+		async update() {},
+		async delete() {},
+		getStatus() {
+			return { state: "idle" };
+		},
+	};
+
+	const sourceSubscription = createSourceSubscription(adapter);
+	let didError = false;
+
+	sourceSubscription.subscribe(
+		() => {
+			throw new Error("listener-failure");
+		},
+		(error) => {
+			didError = true;
+			t.equal(error.message, "listener-failure", "Should route listener failure to error callback");
+		},
+	);
+
+	onUpdate?.([{ id: "1", name: "Pasta", status: "active" }]);
+
+	t.true(didError, "Listener error should be handled by subscriber error callback");
+	t.end();
+});
