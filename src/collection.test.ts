@@ -1,5 +1,6 @@
 import test from "tape";
 import { createCollection } from "./collection.js";
+import { createQueryBuilder } from "./queryBuilder.js";
 import type { SourceAdapter } from "./types.js";
 import type {
 	QuerySubscriptionService,
@@ -33,6 +34,17 @@ test("Collection: accepts injected QuerySubscriptionService", (t) => {
 				};
 			};
 		},
+		createQueryBuilder() {
+			return createQueryBuilder<Recipe>((cte: CTE<Recipe>) => {
+				subscriptionCalled = true;
+				return (callbacks) => {
+					callbacks.onUpdate([]);
+					return () => {
+						/* noop */
+					};
+				};
+			});
+		},
 		fetchSnapshot() {
 			return [];
 		},
@@ -62,6 +74,69 @@ test("Collection: accepts injected QuerySubscriptionService", (t) => {
 	collection.subscribe(
 		() => {
 			t.ok(subscriptionCalled, "Should use injected QuerySubscriptionService");
+		},
+		() => t.fail("unexpected error"),
+	);
+
+	t.end();
+});
+
+test("Collection: query() delegates builder creation to injected QuerySubscriptionService", (t) => {
+	let queryBuilt = false;
+
+	const querySubscriptionService: QuerySubscriptionService<Recipe> = {
+		subscribe() {
+			return () => {
+				/* noop */
+			};
+		},
+		createSubscription() {
+			return () => {
+				return () => {
+					/* noop */
+				};
+			};
+		},
+		createQueryBuilder() {
+			queryBuilt = true;
+			return createQueryBuilder<Recipe>((cte: CTE<Recipe>) => {
+				return (callbacks) => {
+					callbacks.onUpdate([]);
+					return () => {
+						/* noop */
+					};
+				};
+			});
+		},
+		fetchSnapshot() {
+			return [];
+		},
+	};
+
+	const source: SourceAdapter<Recipe> = {
+		subscribe() {
+			return () => {
+				/* noop */
+			};
+		},
+		async create() {},
+		async update() {},
+		async delete() {},
+		getStatus() {
+			return { state: "idle" };
+		},
+	};
+
+	const collection = createCollection({
+		id: "recipes",
+		source,
+		keyOf: (doc) => doc.id,
+		querySubscriptionService,
+	});
+
+	collection.query().subscribe(
+		() => {
+			t.ok(queryBuilt, "Should call createQueryBuilder on injected QuerySubscriptionService");
 		},
 		() => t.fail("unexpected error"),
 	);

@@ -10,9 +10,11 @@ import {
 import type { SourceSubscription } from "./sourceSubscription.js";
 import { createSourceSubscription } from "./sourceSubscription.js";
 import type {
+	IQueryBuilder,
 	QuerySubscriptionCallback,
 	QuerySubscriptionResult,
 } from "./queryBuilder.js";
+import { createQueryBuilder } from "./queryBuilder.js";
 import type { QueryExecutionPort } from "./queryExecution.js";
 import { createDefaultQueryExecutionPort } from "./queryExecution.js";
 import { createQuerySubscriptionAdapter } from "./querySubscriptionAdapter.js";
@@ -33,6 +35,7 @@ export interface QuerySubscriptionService<T> {
 		callbacks: QuerySubscriptionCallback<T>,
 	): UnsubscribeFn;
 	createSubscription(cte: CTE<T>): QuerySubscriptionResult<T>;
+	createQueryBuilder(): IQueryBuilder<T>;
 	fetchSnapshot(cte: CTE<T>): T[];
 }
 
@@ -53,7 +56,7 @@ export function createQuerySubscriptionService<T>(
 		config.queryExecutor ?? createDefaultQueryExecutionPort<T>();
 	const serializeKey = config.keySerializer ?? getCTEIdentity;
 
-	const createSubscription = (cte: CTE<T>): QuerySubscriptionResult<T> => {
+	const createQuerySubscription = (cte: CTE<T>): QuerySubscriptionResult<T> => {
 		return (callbacks) => {
 			const subscriptionKey = serializeKey(cte);
 
@@ -69,12 +72,17 @@ export function createQuerySubscriptionService<T>(
 		};
 	};
 
+	const createQueryBuilderForService = (): IQueryBuilder<T> => {
+		return createQueryBuilder((cte: CTE<T>) => createQuerySubscription(cte));
+	};
+
 	return {
 		subscribe(cte, callbacks) {
-			return createSubscription(cte)(callbacks);
+			return createQuerySubscription(cte)(callbacks);
 		},
 
-		createSubscription,
+		createSubscription: createQuerySubscription,
+		createQueryBuilder: createQueryBuilderForService,
 
 		fetchSnapshot(cte: CTE<T>) {
 			const subscriptionKey = serializeKey(cte);

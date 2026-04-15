@@ -1,6 +1,6 @@
 import type { AdapterStatus, SourceAdapter, UnsubscribeFn } from "./types.js";
 import type { CTE } from "./cte.js";
-import { createQueryBuilder, type IQueryBuilder } from "./queryBuilder.js";
+import type { IQueryBuilder } from "./queryBuilder.js";
 import { createQuerySubscriptionService, type QuerySubscriptionService } from "./querySubscriptionService.js";
 import type { QueryExecutionPort } from "./querySubscriptionService.js";
 import type { SubscriptionManager } from "./subscriptionManager.js";
@@ -71,9 +71,7 @@ export class Collection<T> implements ICollection<T> {
 	}
 
 	query(): IQueryBuilder<T> {
-		return createQueryBuilder((cte: CTE<T>) => {
-			return this._querySubscriptionService.createSubscription(cte);
-		});
+		return this._querySubscriptionService.createQueryBuilder();
 	}
 
 	subscribe(
