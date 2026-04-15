@@ -209,7 +209,7 @@ export function applyCTE<T>(cte: CTE<T>, docs: T[]): T[] {
 	results = applyFiltersWithContext(results, cte, context);
 
 	if (cte.orderBy && cte.orderBy.length > 0) {
-		applyOrderBy(results, cte.orderBy);
+		results = applyOrderBy(results, cte.orderBy);
 	}
 
 	results = applyPagination(results, cte.offset, cte.limit);

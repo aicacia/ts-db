@@ -66,9 +66,9 @@ export class SubscriptionManager<T> {
       entry.adapter = adapter;
 
       const internalUpdate = (rows: T[]) => {
-        entry!.lastResults = rows;
+        entry.lastResults = rows;
 
-        const subs = Array.from(entry!.subscribers.values());
+        const subs = Array.from(entry.subscribers.values());
 
         // First, call onUpdate for all subscribers, capture the first error if any.
         let firstUpdateError: Error | undefined;
@@ -85,6 +85,8 @@ export class SubscriptionManager<T> {
         // If any onUpdate threw, dispatch that error to all subscribers' onError handlers
         if (firstUpdateError) {
           let handlerFailure: unknown;
+          let missingErrorHandler = false;
+
           for (const s of subs) {
             if (s.onError) {
               try {
@@ -93,11 +95,15 @@ export class SubscriptionManager<T> {
                 handlerFailure = hErr;
               }
             } else {
-              handlerFailure = firstUpdateError;
+              missingErrorHandler = true;
             }
           }
 
-          if (handlerFailure !== undefined && entry!.subscribers.size === 1) {
+          if (missingErrorHandler) {
+            throw firstUpdateError;
+          }
+
+          if (handlerFailure !== undefined && entry.subscribers.size === 1) {
             throw toError(handlerFailure);
           }
         }
@@ -105,7 +111,9 @@ export class SubscriptionManager<T> {
 
       const internalError = (err: Error) => {
         let handlerFailure: unknown;
-        const subs = Array.from(entry!.subscribers.values());
+        let missingErrorHandler = false;
+        const subs = Array.from(entry.subscribers.values());
+
         for (const s of subs) {
           if (s.onError) {
             try {
@@ -114,10 +122,15 @@ export class SubscriptionManager<T> {
               handlerFailure = hErr;
             }
           } else {
-            handlerFailure = err;
+            missingErrorHandler = true;
           }
         }
-        if (handlerFailure !== undefined && entry!.subscribers.size === 1) {
+
+        if (missingErrorHandler) {
+          throw err;
+        }
+
+        if (handlerFailure !== undefined && entry.subscribers.size === 1) {
           throw toError(handlerFailure);
         }
       };
@@ -138,7 +151,7 @@ export class SubscriptionManager<T> {
             opts.onError(normalized);
           } catch (e) {
             // If only one subscriber, mimic previous behaviour and throw
-            if (entry!.subscribers.size === 1) {
+            if (entry.subscribers.size === 1) {
               throw toError(e);
             }
           }

@@ -149,6 +149,57 @@ test("SubscriptionManager: cached results are delivered to later subscribers", (
   t.end();
 });
 
+test("SubscriptionManager: error is thrown when a subscriber has no onError handler", (t) => {
+  const mgr = createSubscriptionManager<any>();
+  let notify: ((rows: any[]) => void) | null = null;
+
+  const adapterFactory = () => ({
+    subscribe(onUpdate: any, _onError: any) {
+      notify = onUpdate;
+      return () => {
+        notify = null;
+      };
+    },
+  });
+
+  mgr.subscribe({
+    id: "missing-error-handler",
+    adapterFactory,
+    onUpdate: () => {
+      throw new Error("subscriber-update-failure");
+    },
+  });
+
+  let receivedError = false;
+  mgr.subscribe({
+    id: "missing-error-handler",
+    adapterFactory,
+    onUpdate: () => {},
+    onError: (err) => {
+      receivedError = true;
+      t.equal(
+        err.message,
+        "subscriber-update-failure",
+        "Should forward thrown update errors to onError handlers",
+      );
+    },
+  });
+
+  t.throws(
+    () => {
+      if (!notify) {
+        throw new Error("notify callback not registered");
+      }
+      notify([{ id: "x" }]);
+    },
+    /subscriber-update-failure/,
+    "Should throw when a subscriber has no onError handler",
+  );
+
+  t.true(receivedError, "Subscriber with onError should receive the error");
+  t.end();
+});
+
 test("SubscriptionManager: getSnapshot delegates to adapter when no previous results exist", (t) => {
   const mgr = createSubscriptionManager<any>();
   const adapterFactory = () => ({

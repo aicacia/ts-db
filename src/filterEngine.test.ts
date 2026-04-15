@@ -1,6 +1,6 @@
 import test from "tape";
 import type { CTEComparisonFilter, CTEOrderBy } from "./cte.js";
-import { applyFilter, applyOrderBy } from "./filterEngine.js";
+import { applyCTE, applyFilter, applyOrderBy } from "./filterEngine.js";
 
 interface Recipe {
 	id: string;
@@ -61,6 +61,34 @@ test("Filter engine: applyOrderBy returns a sorted copy without mutating input",
 		docs.map((doc) => doc.id),
 		["2", "1"],
 		"Should not mutate the original documents array",
+	);
+
+	t.end();
+});
+
+test("Filter engine: applyCTE respects orderBy and returns sorted results", (t) => {
+	const docs = [
+		{ id: "2", name: "B" },
+		{ id: "1", name: "A" },
+	];
+
+	const cte = {
+		version: "1.0",
+		filters: [],
+		orderBy: [{ field: "name", direction: "asc" }],
+	};
+
+	const result = applyCTE(cte, docs);
+
+	t.deepEqual(
+		result.map((doc) => doc.id),
+		["1", "2"],
+		"applyCTE should sort results when orderBy is provided",
+	);
+	t.deepEqual(
+		docs.map((doc) => doc.id),
+		["2", "1"],
+		"applyCTE should not mutate the original documents array",
 	);
 
 	t.end();
