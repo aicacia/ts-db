@@ -274,3 +274,26 @@ t.deepEqual(service.fetchSnapshot(cte).map((doc) => doc.id), ["1"]);
 	unsub();
 	t.end();
 });
+
+test("QuerySubscriptionService: fetchSnapshot throws without sourceSubscription snapshot support", (t) => {
+	const service = createQuerySubscriptionService({
+		sourceSubscription: {
+			subscribe(onUpdate, _onError) {
+				onUpdate([]);
+				return () => {
+					/* noop */
+				};
+			},
+		},
+	});
+
+	const cte: CTE<Recipe> = { version: "1.0" };
+
+	t.throws(
+		() => service.fetchSnapshot(cte),
+		/Error: Source subscription does not support snapshot retrieval/, 
+		"Should throw when sourceSubscription lacks snapshot retrieval",
+	);
+
+	t.end();
+});

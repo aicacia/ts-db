@@ -103,12 +103,16 @@ export function applyFilter<T>(
 				return (fieldValue as number) <= (filter.value as number);
 			case "in":
 				return (filter.value as unknown[]).includes(fieldValue);
-			case "contains":
-				return String(fieldValue).includes(String(filter.value));
-			case "containsIgnoreCase":
-				return toSearchString(fieldValue)
-					.toLowerCase()
-					.includes(toSearchString(filter.value).toLowerCase());
+			case "contains": {
+				const haystack = toSearchString(fieldValue);
+				const needle = toSearchString(filter.value);
+				return needle.length === 0 ? true : haystack.includes(needle);
+			}
+			case "containsIgnoreCase": {
+				const haystack = toSearchString(fieldValue).toLowerCase();
+				const needle = toSearchString(filter.value).toLowerCase();
+				return needle.length === 0 ? true : haystack.includes(needle);
+			}
 			case "fuzzyContains":
 				return fuzzyContainsMatch(fieldValue, filter.value);
 			case "includes":
@@ -157,7 +161,7 @@ export function applyFilter<T>(
 		return filter.operator === "in" ? existsInCTE : !existsInCTE;
 	}
 
-	return true;
+	return false;
 }
 
 function applyFiltersWithContext<T>(
@@ -174,7 +178,8 @@ export function applyFilters<T>(docs: T[], cte: CTE<T>): T[] {
 
 /** Apply ordering to documents based on CTEOrderBy criteria. NOTE: mutates array */
 export function applyOrderBy<T>(docs: T[], orderBy: CTEOrderBy<T>[]): T[] {
-	return docs.sort(createItemSortFunction(orderBy));
+	const sorted = [...docs];
+	return sorted.sort(createItemSortFunction(orderBy));
 }
 
 export function applyPagination<T>(

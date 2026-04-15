@@ -91,7 +91,14 @@ export function createQuerySubscriptionService<T>(
 				return snapshot;
 			}
 
-			const sourceDocs = sourceSubscription.getSnapshot?.() ?? []
+			const snapshotProvider = sourceSubscription.getSnapshot;
+			if (!snapshotProvider) {
+				throw new Error(
+					"Source subscription does not support snapshot retrieval",
+				);
+			}
+
+			const sourceDocs = snapshotProvider.call(sourceSubscription);
 
 			return queryExecutor.execute(cte, [...sourceDocs]);
 		},
