@@ -65,3 +65,39 @@ test("QueryBuilder: toCTE returns a snapshot copy", (t) => {
 	t.notOk(cte.orderBy, "Snapshot CTE should not reflect later builder modifications");
 	t.end();
 });
+
+test("QueryBuilder: limit and offset validate non-negative values", (t) => {
+	const query = createQueryBuilder<Recipe>();
+
+	t.throws(
+		() => query.limit(-1),
+		/limit must be >= 0/,
+		"limit should reject negative values",
+	);
+
+	t.throws(
+		() => query.offset(-1),
+		/offset must be >= 0/,
+		"offset should reject negative values",
+	);
+
+	t.end();
+});
+
+test("QueryBuilder: paginate validates page and pageSize", (t) => {
+	const query = createQueryBuilder<Recipe>();
+
+	t.throws(
+		() => query.paginate(-1),
+		/page must be >= 0/,
+		"paginate should reject negative page values",
+	);
+
+	t.throws(
+		() => query.paginate(0, 0),
+		/pageSize must be > 0/,
+		"paginate should reject non-positive page sizes",
+	);
+
+	t.end();
+});

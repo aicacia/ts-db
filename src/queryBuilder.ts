@@ -371,16 +371,28 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 	}
 
 	limit(n: number): IQueryBuilder<T> {
+		if (n < 0) {
+			throw new Error("limit must be >= 0");
+		}
 		this._cte.limit = n;
 		return this;
 	}
 
 	offset(n: number): IQueryBuilder<T> {
+		if (n < 0) {
+			throw new Error("offset must be >= 0");
+		}
 		this._cte.offset = n;
 		return this;
 	}
 
 	paginate(page: number, pageSize = 10): IQueryBuilder<T> {
+		if (page < 0) {
+			throw new Error("page must be >= 0");
+		}
+		if (pageSize <= 0) {
+			throw new Error("pageSize must be > 0");
+		}
 		this._cte.offset = page * pageSize;
 		this._cte.limit = pageSize;
 		return this;

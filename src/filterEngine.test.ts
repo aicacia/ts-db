@@ -127,3 +127,25 @@ test("Filter engine: applyCTE respects orderBy and returns sorted results", (t) 
 
 	t.end();
 });
+
+test("Filter engine: numeric comparisons require numeric values", (t) => {
+	interface NumberRecord {
+		id: string;
+		count: string;
+	}
+
+	const filter: CTEComparisonFilter<NumberRecord> = {
+		type: "comparison",
+		field: "count",
+		operator: "greaterThan",
+		value: "10",
+	};
+
+	t.equal(
+		applyFilter(filter, { id: "1", count: "5" }),
+		false,
+		"greaterThan should return false when filter values are not numeric",
+	);
+
+	t.end();
+});

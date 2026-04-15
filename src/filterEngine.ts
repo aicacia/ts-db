@@ -51,6 +51,10 @@ function applyNestedCTEs<T>(
 	}
 }
 
+function isNumber(value: unknown): value is number {
+	return typeof value === "number" && !Number.isNaN(value);
+}
+
 function applyFiltersInternal<T>(
 	docs: T[],
 	filters?: CTEFilter<T>[],
@@ -98,13 +102,13 @@ export function applyFilter<T>(
 			case "notEqual":
 				return fieldValue !== filter.value;
 			case "greaterThan":
-				return (fieldValue as number) > (filter.value as number);
+				return isNumber(fieldValue) && isNumber(filter.value) && fieldValue > filter.value;
 			case "lessThan":
-				return (fieldValue as number) < (filter.value as number);
+				return isNumber(fieldValue) && isNumber(filter.value) && fieldValue < filter.value;
 			case "greaterThanOrEqual":
-				return (fieldValue as number) >= (filter.value as number);
+				return isNumber(fieldValue) && isNumber(filter.value) && fieldValue >= filter.value;
 			case "lessThanOrEqual":
-				return (fieldValue as number) <= (filter.value as number);
+				return isNumber(fieldValue) && isNumber(filter.value) && fieldValue <= filter.value;
 			case "in":
 				return Array.isArray(filter.value)
 					? filter.value.includes(fieldValue)

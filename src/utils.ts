@@ -8,12 +8,30 @@ import type { FieldPath } from "./types.js";
 export function compareValues(a: unknown, b: unknown): number {
 	if (a === null || a === undefined) return 1;
 	if (b === null || b === undefined) return -1;
+	if (a === b) return 0;
 
-	const aComp = a as bigint | boolean | number | string;
-	const bComp = b as bigint | boolean | number | string;
+	const aType = typeof a;
+	const bType = typeof b;
 
-	if (aComp < bComp) return -1;
-	if (aComp > bComp) return 1;
+	if (aType !== bType) {
+		return aType < bType ? -1 : 1;
+	}
+
+	if (
+		aType === "string" ||
+		aType === "number" ||
+		aType === "bigint" ||
+		aType === "boolean"
+	) {
+		if (a < b) return -1;
+		if (a > b) return 1;
+		return 0;
+	}
+
+	const aString = String(a);
+	const bString = String(b);
+	if (aString < bString) return -1;
+	if (aString > bString) return 1;
 	return 0;
 }
 
