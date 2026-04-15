@@ -1,4 +1,5 @@
 import test from "tape";
+import type { CTEComparisonFilter, CTEOrderBy } from "./cte.js";
 import { applyFilter, applyOrderBy } from "./filterEngine.js";
 
 interface Recipe {
@@ -7,12 +8,12 @@ interface Recipe {
 }
 
 test("Filter engine: contains filter does not treat undefined as string 'undefined'", (t) => {
-	const filter = {
+	const filter: CTEComparisonFilter<Recipe> = {
 		type: "comparison",
 		field: "name",
 		operator: "contains",
 		value: "undefined",
-	} as any;
+	};
 
 	t.equal(
 		applyFilter(filter, { id: "1", name: undefined }),
@@ -24,12 +25,12 @@ test("Filter engine: contains filter does not treat undefined as string 'undefin
 });
 
 test("Filter engine: contains filter returns true for empty needle", (t) => {
-	const filter = {
+	const filter: CTEComparisonFilter<Recipe> = {
 		type: "comparison",
 		field: "name",
 		operator: "contains",
 		value: "",
-	} as any;
+	};
 
 	t.equal(
 		applyFilter(filter, { id: "1", name: "Pasta" }),
@@ -46,9 +47,10 @@ test("Filter engine: applyOrderBy returns a sorted copy without mutating input",
 		{ id: "1", name: "A" },
 	];
 
-	const sorted = applyOrderBy(docs, [
+	const orderBy: CTEOrderBy<Recipe>[] = [
 		{ field: "name", direction: "asc" },
-	] as any);
+	];
+	const sorted = applyOrderBy(docs, orderBy);
 
 	t.deepEqual(
 		sorted.map((doc) => doc.id),

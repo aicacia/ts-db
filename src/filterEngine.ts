@@ -176,7 +176,7 @@ export function applyFilters<T>(docs: T[], cte: CTE<T>): T[] {
 	return applyFiltersInternal(docs, cte.filters);
 }
 
-/** Apply ordering to documents based on CTEOrderBy criteria. NOTE: mutates array */
+/** Apply ordering to documents based on CTEOrderBy criteria. Returns a sorted copy without mutating the input array. */
 export function applyOrderBy<T>(docs: T[], orderBy: CTEOrderBy<T>[]): T[] {
 	const sorted = [...docs];
 	return sorted.sort(createItemSortFunction(orderBy));

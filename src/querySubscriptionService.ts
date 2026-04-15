@@ -48,8 +48,16 @@ export function createQuerySubscriptionService<T>(
 		);
 	}
 
-	const sourceSubscription =
-		config.sourceSubscription ?? createSourceSubscription(config.source!);
+	let sourceSubscription: SubscriptionAdapter<T>;
+	if (config.sourceSubscription) {
+		sourceSubscription = config.sourceSubscription;
+	} else if (config.source) {
+		sourceSubscription = createSourceSubscription(config.source);
+	} else {
+		throw new Error(
+			"QuerySubscriptionService requires either source or sourceSubscription",
+		);
+	}
 	const subscriptionManager =
 		config.subscriptionManager ?? createSubscriptionManager<T>();
 	const queryExecutor: QueryExecutionPort<T> =
