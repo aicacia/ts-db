@@ -34,6 +34,7 @@ export class MemoryAdapter<T extends Record<string, any>>
 	subscribe(
 		onUpdate: (docs: T[]) => void,
 		onError: (error: Error) => void,
+		query?: unknown,
 	): UnsubscribeFn {
 		const entry: SubscriptionEntry<T> = {
 			onUpdate,

@@ -2,101 +2,122 @@ import type { SourceAdapter, UnsubscribeFn } from "../types.js";
 import type { SnapshotSubscriptionAdapter } from "./subscriptionManager.js";
 import { safeInvoke, toError } from "../utils.js";
 
+interface SourceQueryEntry<T> {
+sourceUnsubscribe: UnsubscribeFn;
+listeners: Set<{
+onUpdate: (docs: T[]) => void;
+onError: (error: Error) => void;
+}>;
+currentDocs: T[];
+hasSnapshot: boolean;
+}
+
 export interface SourceSubscription<T> extends SnapshotSubscriptionAdapter<T> {}
 
+function createQueryKey(query?: unknown): string {
+if (query === undefined) {
+return "__default__";
+}
+
+try {
+return `query:${JSON.stringify(query)}`;
+} catch {
+return `query:${String(query)}`;
+}
+}
+
 export function createSourceSubscription<T>(
-	source: SourceAdapter<T>,
+source: SourceAdapter<T>,
 ): SourceSubscription<T> {
-	let adapterUnsubscribe: UnsubscribeFn | null = null;
-	let hasSnapshot = false;
-	let currentDocs: T[] = [];
-	const listeners = new Set<{
-		onUpdate: (docs: T[]) => void;
-		onError: (error: Error) => void;
-	}>();
+const entries = new Map<string, SourceQueryEntry<T>>();
 
-	function stopSourceSubscription(): void {
-		if (!adapterUnsubscribe) {
-			return;
-		}
+function notifyListeners(entry: SourceQueryEntry<T>, docs: T[]): void {
+for (const listener of Array.from(entry.listeners)) {
+safeInvoke(listener.onUpdate, docs, listener.onError, true);
+}
+}
 
-		try {
-			adapterUnsubscribe();
-		} catch {
-			// ignore adapter unsubscribe failures
-		}
+function notifyError(entry: SourceQueryEntry<T>, error: Error): void {
+for (const listener of Array.from(entry.listeners)) {
+if (listener.onError) {
+safeInvoke(listener.onError, toError(error), undefined, true);
+}
+}
+}
 
-		adapterUnsubscribe = null;
-		hasSnapshot = false;
-		currentDocs = [];
-	}
+function ensureSourceSubscription(query?: unknown): SourceQueryEntry<T> {
+const key = createQueryKey(query);
+let entry = entries.get(key);
+if (entry) {
+return entry;
+}
 
-	function notifyListeners(docs: T[]): void {
-		for (const listener of Array.from(listeners)) {
-			safeInvoke(listener.onUpdate, docs, listener.onError, true);
-		}
-	}
+entry = {
+sourceUnsubscribe: () => {
+/* noop */
+},
+listeners: new Set(),
+currentDocs: [],
+hasSnapshot: false,
+};
 
-	function notifyError(error: Error): void {
-		for (const listener of Array.from(listeners)) {
-			if (listener.onError) {
-				safeInvoke(listener.onError, toError(error), undefined, true);
-			}
-		}
-	}
+entry.sourceUnsubscribe = source.subscribe(
+(docs) => {
+entry.currentDocs = [...docs];
+entry.hasSnapshot = true;
+notifyListeners(entry, entry.currentDocs);
+},
+(error) => {
+notifyError(entry, error);
+},
+query,
+);
 
-	function ensureSourceSubscription(): void {
-		if (adapterUnsubscribe) {
-			return;
-		}
+entries.set(key, entry);
+return entry;
+}
 
-		adapterUnsubscribe = source.subscribe(
-			(docs) => {
-				currentDocs = [...docs];
-				hasSnapshot = true;
-				notifyListeners(currentDocs);
-			},
-			(error) => {
-				notifyError(error);
-			},
-		);
-	}
+return {
+subscribe(onUpdate, onError, query?: unknown) {
+const entry = ensureSourceSubscription(query);
+let receivedSnapshot = false;
 
-	return {
-		subscribe(onUpdate, onError) {
-			let receivedSnapshot = false;
+const wrappedListener = {
+onUpdate(docs: T[]) {
+receivedSnapshot = true;
+onUpdate(docs);
+},
+onError(error: Error) {
+onError(error);
+},
+};
 
-			const wrappedListener = {
-				onUpdate(docs: T[]) {
-					receivedSnapshot = true;
-					onUpdate(docs);
-				},
-				onError(error: Error) {
-					onError(error);
-				},
-			};
+entry.listeners.add(wrappedListener);
 
-			ensureSourceSubscription();
-			listeners.add(wrappedListener);
+if (entry.hasSnapshot && !receivedSnapshot) {
+try {
+wrappedListener.onUpdate([...entry.currentDocs]);
+} catch (err) {
+wrappedListener.onError(toError(err));
+}
+}
 
-			if (hasSnapshot && !receivedSnapshot) {
-				try {
-					wrappedListener.onUpdate([...currentDocs]);
-				} catch (err) {
-					wrappedListener.onError(toError(err));
-				}
-			}
+return () => {
+entry.listeners.delete(wrappedListener);
+if (entry.listeners.size === 0) {
+try {
+entry.sourceUnsubscribe();
+} catch {
+// ignore unsubscribe errors
+}
+entries.delete(createQueryKey(query));
+}
+};
+},
 
-			return () => {
-				listeners.delete(wrappedListener);
-				if (listeners.size === 0) {
-					stopSourceSubscription();
-				}
-			};
-		},
-
-		getSnapshot() {
-			return [...currentDocs];
-		},
-	};
+getSnapshot(query?: unknown) {
+const entry = entries.get(createQueryKey(query));
+return entry ? [...entry.currentDocs] : [];
+},
+};
 }

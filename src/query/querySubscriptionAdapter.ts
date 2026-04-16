@@ -30,11 +30,12 @@ export const createQuerySubscriptionAdapter = <T>(
 					}
 				},
 				onError,
+				cte,
 			);
 		},
 
 		getSnapshot: () => {
-			const sourceSnapshot = sourceAdapter.getSnapshot?.() ?? [];
+			const sourceSnapshot = sourceAdapter.getSnapshot?.(cte) ?? [];
 			return queryExecutor.execute(cte, [...sourceSnapshot]);
 		},
 	};

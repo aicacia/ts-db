@@ -18,6 +18,7 @@ export interface SourceAdapter<T> {
 	subscribe(
 		onUpdate: (docs: T[]) => void,
 		onError: (error: Error) => void,
+		query?: unknown,
 	): UnsubscribeFn;
 
 	/** Create a document. */

@@ -32,6 +32,7 @@ export interface HttpSourceAdapterConfig {
 		config: HttpSourceAdapterConfig,
 		payload?: unknown,
 		id?: string,
+		query?: unknown,
 	) => RequestInit;
 }
 
@@ -111,12 +112,13 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 	subscribe(
 		onUpdate: (docs: T[]) => void,
 		onError: (error: Error) => void,
+		query?: unknown,
 	): UnsubscribeFn {
 		const entry: SubscriptionEntry<T> = { onUpdate, onError };
 		this._subscriptions.push(entry);
 
 		if (this._subscriptions.length === 1) {
-			this._startLiveTransport();
+			this._startLiveTransport(query);
 		}
 
 		const error = safeInvoke(onUpdate, this._cachedDocs, onError);
@@ -154,13 +156,13 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 		return this._status;
 	}
 
-	private _startLiveTransport(): void {
-		this._fetchAndNotify().catch((error) => this._notifyError(error));
+	private _startLiveTransport(query?: unknown): void {
+		this._fetchAndNotify(query).catch((error) => this._notifyError(error));
 
 		const method = this._config.live.method;
 		switch (method) {
 			case "polling":
-				this._startPolling();
+				this._startPolling(query);
 				break;
 			case "sse":
 				this._startSSE();
@@ -192,25 +194,25 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 		}
 	}
 
-	private _startPolling(): void {
-		this._schedulePoll(0);
+	private _startPolling(query?: unknown): void {
+		this._schedulePoll(0, query);
 	}
 
-	private _schedulePoll(delay: number): void {
+	private _schedulePoll(delay: number, query?: unknown): void {
 		if (this._pollTimer !== null) {
 			clearTimeout(this._pollTimer);
 		}
 
 		this._pollTimer = setTimeout(async () => {
 			try {
-				await this._fetchAndNotify();
+				await this._fetchAndNotify(query);
 				this._pollRetries = 0;
-				this._schedulePoll(this._config.live.pollInterval);
+				this._schedulePoll(this._config.live.pollInterval, query);
 			} catch (error) {
 				this._pollRetries += 1;
 				this._notifyError(error);
 				if (this._pollRetries < this._config.live.maxRetries) {
-					this._schedulePoll(this._config.live.retryDelay);
+					this._schedulePoll(this._config.live.retryDelay, query);
 				}
 			}
 		}, delay);
@@ -277,7 +279,7 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 		};
 	}
 
-	private async _fetchAndNotify(): Promise<void> {
+	private async _fetchAndNotify(query?: unknown): Promise<void> {
 		if (this._isFetching) {
 			return;
 		}
@@ -286,7 +288,7 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 		this._updateStatus("syncing");
 
 		try {
-			const docs = await this._fetchList();
+			const docs = await this._fetchList(query);
 			this._cachedDocs = docs;
 			this._notifySubscribers(docs);
 			this._updateStatus("idle");
@@ -299,9 +301,9 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 		}
 	}
 
-	private async _fetchList(): Promise<T[]> {
+	private async _fetchList(query?: unknown): Promise<T[]> {
 		const url = this._resolveUrl("list");
-		const init = this._buildRequestInit("list");
+		const init = this._buildRequestInit("list", undefined, undefined, query);
 		const response = await this._sendFetch(url, init);
 		if (!response.ok) {
 			throw new Error(`Failed to fetch documents: ${response.status} ${response.statusText}`);
@@ -326,9 +328,10 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 		op: HttpOperation,
 		payload?: unknown,
 		id?: string,
+		query?: unknown,
 	): RequestInit {
 		if (this._config.requestFactory) {
-			return this._config.requestFactory(op, this._config, payload, id);
+			return this._config.requestFactory(op, this._config, payload, id, query);
 		}
 
 		const headers = {

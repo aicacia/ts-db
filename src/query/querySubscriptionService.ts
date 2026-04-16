@@ -106,7 +106,7 @@ export function createQuerySubscriptionService<T>(
 				);
 			}
 
-			const sourceDocs = snapshotProvider.call(sourceSubscription);
+			const sourceDocs = snapshotProvider.call(sourceSubscription, cte);
 
 			return queryExecutor.execute(cte, [...sourceDocs]);
 		},

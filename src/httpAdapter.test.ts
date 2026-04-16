@@ -48,6 +48,43 @@ test("HttpSourceAdapter: subscribe loads initial documents", async (t) => {
 	t.end();
 });
 
+test("HttpSourceAdapter: subscribe forwards query metadata to requestFactory", async (t) => {
+	const docs: Dog[] = [{ id: "1", name: "Fido" }];
+	let receivedQuery: unknown = undefined;
+
+	const adapter = new HttpSourceAdapter<Dog>({
+		baseUrl: "https://api.example.com",
+		collectionPath: "dogs",
+		live: { method: "none" },
+		requestFactory: (_op, _config, _payload, _id, query) => {
+			receivedQuery = query;
+			return { method: "GET", headers: {} };
+		},
+		fetcher: async (_input: RequestInfo | URL, init?: RequestInit) => {
+			return {
+				ok: true,
+				status: 200,
+				statusText: "OK",
+				json: async () => docs,
+			} as unknown as Response;
+		},
+	});
+
+	const query = { version: "1.0" };
+	const unsub = adapter.subscribe(
+		() => {},
+		() => t.fail("Unexpected error"),
+		query,
+	);
+
+	await delay(0);
+
+	t.deepEqual(receivedQuery, query, "Should forward query metadata to requestFactory");
+
+	unsub();
+	t.end();
+});
+
 test("HttpSourceAdapter: create/update/delete use configured endpoints", async (t) => {
 	const requests: Array<{ method: string; url: string; body?: string | null }> = [];
 

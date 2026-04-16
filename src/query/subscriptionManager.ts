@@ -5,8 +5,9 @@ export interface SubscriptionAdapter<T> {
   subscribe(
     onUpdate: (rows: T[]) => void,
     onError: (err: Error) => void,
+    query?: unknown,
   ): UnsubscribeFn;
-  getSnapshot?: () => T[];
+  getSnapshot?: (query?: unknown) => T[];
 }
 
 export type SnapshotSubscriptionAdapter<T> = SubscriptionAdapter<T> & {
