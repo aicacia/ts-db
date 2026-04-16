@@ -1,7 +1,7 @@
 import test from "tape";
-import { createCollection } from "./collection.js";
+import { createCollection } from "./collection/index.js";
 import { createQueryBuilder } from "./query/queryBuilder.js";
-import { MemoryAdapter } from "./memoryAdapter.js";
+import { MemoryAdapter } from "./adapters/index.js";
 import type { SourceAdapter } from "./types.js";
 import type {
 	QuerySubscriptionService,

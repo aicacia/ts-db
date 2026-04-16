@@ -1,5 +1,5 @@
-import type { AdapterStatus, SourceAdapter, UnsubscribeFn } from "./types.js";
-import { safeInvoke, toError } from "./utils.js";
+import type { AdapterStatus, SourceAdapter, UnsubscribeFn } from "../types.js";
+import { safeInvoke, toError } from "../utils.js";
 
 export type LiveTransportMethod = "polling" | "sse" | "websocket" | "none";
 

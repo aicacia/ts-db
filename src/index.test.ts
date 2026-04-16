@@ -1,7 +1,7 @@
 import test from "tape";
-import { createCollection } from "./collection.js";
-import { createSingleton } from "./singleton.js";
-import { MemoryAdapter, MemorySingletonAdapter } from "./memoryAdapter.js";
+import { createCollection } from "./collection/index.js";
+import { createSingleton } from "./singleton/index.js";
+import { MemoryAdapter, MemorySingletonAdapter } from "./adapters/index.js";
 import {
 	type CTE,
 	and,

@@ -3,8 +3,8 @@ import type {
 	SingletonSourceAdapter,
 	SourceAdapter,
 	UnsubscribeFn,
-} from "./types.js";
-import { safeInvoke, toError } from "./utils.js";
+} from "../types.js";
+import { safeInvoke, toError } from "../utils.js";
 
 interface SubscriptionEntry<T> {
 	onUpdate: (docs: T[]) => void;

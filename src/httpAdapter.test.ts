@@ -1,5 +1,5 @@
 import test from "tape";
-import { HttpSourceAdapter } from "./httpAdapter.js";
+import { HttpSourceAdapter } from "./adapters/httpAdapter.js";
 
 type Dog = {
 	id: string;

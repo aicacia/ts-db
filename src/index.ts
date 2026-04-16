@@ -7,25 +7,24 @@ export type {
 } from "./types.js";
 
 // Collection types and API
-export type { CollectionConfig, ICollection } from "./collection.js";
-export { Collection, createCollection } from "./collection.js";
+export type { CollectionConfig, ICollection } from "./collection/index.js";
+export { Collection, createCollection } from "./collection/index.js";
 
 // Singleton types and API
-export type { SingletonConfig, ISingleton } from "./singleton.js";
-export { Singleton, createSingleton } from "./singleton.js";
+export type { SingletonConfig, ISingleton } from "./singleton/index.js";
+export { Singleton, createSingleton } from "./singleton/index.js";
 
 // Query module public API
 export * from "./query/index.js";
 
 // Adapters
-export { MemoryAdapter, MemorySingletonAdapter } from "./memoryAdapter.js";
-export { HttpSourceAdapter } from "./httpAdapter.js";
+export { MemoryAdapter, MemorySingletonAdapter, HttpSourceAdapter } from "./adapters/index.js";
 export type {
 	HttpSourceAdapterConfig,
 	HttpSourceAdapterLiveConfig,
 	HttpOperation,
 	LiveTransportMethod,
-} from "./httpAdapter.js";
+} from "./adapters/index.js";
 
 // Utilities
 export { getFieldValue } from "./utils.js";

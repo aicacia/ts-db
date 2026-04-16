@@ -1,6 +1,6 @@
-import { createCollection, type ICollection } from "./collection.js";
-import { createSingleton, type ISingleton } from "./singleton.js";
-import { MemoryAdapter, MemorySingletonAdapter } from "./memoryAdapter.js";
+import { createCollection, type ICollection } from "./collection/index.js";
+import { createSingleton, type ISingleton } from "./singleton/index.js";
+import { MemoryAdapter, MemorySingletonAdapter } from "./adapters/index.js";
 
 // biome-ignore lint/suspicious/noExplicitAny: need to support any object
 export interface TestCollectionResult<T extends Record<string, any>> {

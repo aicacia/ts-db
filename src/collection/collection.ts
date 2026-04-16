@@ -3,16 +3,16 @@ import type {
 	SourceAdapter,
 	UnsubscribeFn,
 	FieldPath,
-} from "./types.js";
-import type { CTE } from "./cte.js";
-import type { IQueryBuilder } from "./query/queryBuilder.js";
+} from "../types.js";
+import type { CTE } from "../cte.js";
+import type { IQueryBuilder } from "../query/queryBuilder.js";
 import {
 	createQuerySubscriptionService,
 	type QuerySubscriptionService,
-} from "./query/querySubscriptionService.js";
-import type { QueryExecutionPort } from "./query/querySubscriptionService.js";
-import type { SubscriptionManager } from "./query/subscriptionManager.js";
-import type { SourceSubscription } from "./query/sourceSubscription.js";
+} from "../query/querySubscriptionService.js";
+import type { QueryExecutionPort } from "../query/querySubscriptionService.js";
+import type { SubscriptionManager } from "../query/subscriptionManager.js";
+import type { SourceSubscription } from "../query/sourceSubscription.js";
 
 export interface CollectionConfig<T> {
 	id: string;

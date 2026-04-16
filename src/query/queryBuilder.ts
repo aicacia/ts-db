@@ -1,5 +1,5 @@
 import type { FieldPath, UnsubscribeFn } from "../types.js";
-import type { ICollection } from "../collection.js";
+import type { ICollection } from "../collection/index.js";
 
 import {
 	type CTE,

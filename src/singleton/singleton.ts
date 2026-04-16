@@ -2,8 +2,8 @@ import type {
 	AdapterStatus,
 	SingletonSourceAdapter,
 	UnsubscribeFn,
-} from "./types.js";
-import { toError } from "./utils.js";
+} from "../types.js";
+import { toError } from "../utils.js";
 
 /**
  * Singleton configuration
