@@ -4,6 +4,7 @@ import { createQueryBuilder } from "../query/index.js";
 import { MemoryAdapter } from "../adapters/index.js";
 import type { SourceAdapter } from "../types/index.js";
 import type {
+	QueryService,
 	QuerySubscriptionService,
 	QuerySubscriptionResult,
 } from "../query/index.js";
@@ -75,6 +76,73 @@ test("Collection: accepts injected QuerySubscriptionService", (t) => {
 	collection.subscribe(
 		() => {
 			t.ok(subscriptionCalled, "Should use injected QuerySubscriptionService");
+		},
+		() => t.fail("unexpected error"),
+	);
+
+	t.end();
+});
+
+test("Collection: accepts injected QueryService", (t) => {
+	let subscriptionCalled = false;
+
+	const queryService: QueryService<Recipe> = {
+		subscribe(cte, callbacks) {
+			subscriptionCalled = true;
+			callbacks.onUpdate([]);
+			return () => {
+				/* noop */
+			};
+		},
+		createSubscription(cte) {
+			return (callbacks) => {
+				subscriptionCalled = true;
+				callbacks.onUpdate([]);
+				return () => {
+					/* noop */
+				};
+			};
+		},
+		createQueryBuilder() {
+			return createQueryBuilder<Recipe>((cte: CTE<Recipe>) => {
+				subscriptionCalled = true;
+				return (callbacks) => {
+					callbacks.onUpdate([]);
+					return () => {
+						/* noop */
+					};
+				};
+			});
+		},
+		fetchSnapshot() {
+			return [];
+		},
+	};
+
+	const source: SourceAdapter<Recipe> = {
+		subscribe() {
+			return () => {
+				/* noop */
+			};
+		},
+		async create() {},
+		async update() {},
+		async delete() {},
+		getStatus() {
+			return { state: "idle" };
+		},
+	};
+
+	const collection = createCollection({
+		id: "recipes",
+		source,
+		keyOf: (doc) => doc.id,
+		queryService,
+	});
+
+	collection.subscribe(
+		() => {
+			t.ok(subscriptionCalled, "Should use injected QueryService");
 		},
 		() => t.fail("unexpected error"),
 	);

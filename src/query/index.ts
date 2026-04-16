@@ -8,10 +8,12 @@ export type {
 
 export type { QueryExecutionPort } from "./queryExecution.js";
 export type {
+	QueryServiceConfig,
+	QueryService,
 	QuerySubscriptionServiceConfig,
 	QuerySubscriptionService,
 } from "./querySubscriptionService.js";
-export { createQuerySubscriptionService } from "./querySubscriptionService.js";
+export { createQueryService, createQuerySubscriptionService } from "./querySubscriptionService.js";
 
 export type { SourceSubscription } from "./sourceSubscription.js";
 export { createSourceSubscription } from "./sourceSubscription.js";

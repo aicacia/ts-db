@@ -7,7 +7,8 @@ import type {
 import type { CTE } from "../query/cte.js";
 import type { IQueryBuilder } from "../query/queryBuilder.js";
 import {
-	createQuerySubscriptionService,
+	createQueryService,
+	type QueryService,
 	type QuerySubscriptionService,
 } from "../query/querySubscriptionService.js";
 import type { QueryExecutionPort } from "../query/querySubscriptionService.js";
@@ -23,6 +24,7 @@ export interface CollectionConfig<T> {
 	sourceSubscription?: SourceSubscription<T>;
 	queryExecutor?: QueryExecutionPort<T>;
 	keySerializer?: (cte: CTE<T>) => string;
+	queryService?: QueryService<T>;
 	querySubscriptionService?: QuerySubscriptionService<T>;
 }
 
@@ -53,7 +55,7 @@ export interface ICollection<T> {
 export class Collection<T> implements ICollection<T> {
 	readonly id: string;
 	private _source: SourceAdapter<T>;
-	private _querySubscriptionService: QuerySubscriptionService<T>;
+	private _queryService: QueryService<T>;
 	private _keyOf: (doc: T) => string;
 	private _keyField: FieldPath<T> | undefined;
 
@@ -62,9 +64,10 @@ export class Collection<T> implements ICollection<T> {
 		this._source = config.source;
 		this._keyOf = config.keyOf;
 		this._keyField = config.keyField;
-		this._querySubscriptionService =
-			config.querySubscriptionService ??
-			createQuerySubscriptionService({
+		const injectedQueryService = config.queryService ?? config.querySubscriptionService;
+		this._queryService =
+			injectedQueryService ??
+			createQueryService({
 				source: this._source,
 				sourceSubscription: config.sourceSubscription,
 				subscriptionManager: config.subscriptionManager,
@@ -86,7 +89,7 @@ export class Collection<T> implements ICollection<T> {
 	}
 
 	query(): IQueryBuilder<T> {
-		return this._querySubscriptionService.createQueryBuilder();
+		return this._queryService.createQueryBuilder();
 	}
 
 	subscribe(

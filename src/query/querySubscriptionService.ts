@@ -29,6 +29,9 @@ export interface QuerySubscriptionServiceConfig<T> {
 	keySerializer?: (cte: CTE<T>) => string;
 }
 
+export type QueryServiceConfig<T> = QuerySubscriptionServiceConfig<T>;
+export type QueryService<T> = QuerySubscriptionService<T>;
+
 export interface QuerySubscriptionService<T> {
 	subscribe(
 		cte: CTE<T>,
@@ -111,4 +114,9 @@ export function createQuerySubscriptionService<T>(
 			return queryExecutor.execute(cte, [...sourceDocs]);
 		},
 	};
+}
+export function createQueryService<T>(
+	config: QueryServiceConfig<T>,
+): QueryService<T> {
+	return createQuerySubscriptionService(config);
 }
