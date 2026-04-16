@@ -18,7 +18,7 @@ const config = {
 			base
 		},
 		alias: {
-			'@aicacia/db/svelte': path.resolve(__dirname, '../src/svelte.svelte.ts'),
+			'@aicacia/db/svelte': path.resolve(__dirname, '../src/svelte/index.ts'),
 			'@aicacia/db': path.resolve(__dirname, '../src/index.ts')
 		}
 	}

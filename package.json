@@ -17,10 +17,10 @@
 			"require": "./cjs/index.js"
 		},
 		"./svelte": {
-			"svelte": "./src/svelte.svelte.ts",
+			"svelte": "./src/svelte/index.ts",
 			"types": "./types/svelte.svelte.d.ts",
-			"import": "./esm/svelte.svelte.js",
-			"require": "./cjs/svelte.svelte.js"
+			"import": "./esm/svelte/index.js",
+			"require": "./cjs/svelte/index.js"
 		},
 		"./package.json": "./package.json"
 	},

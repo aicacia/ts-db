@@ -8,9 +8,9 @@ import {
 	type KeyValue,
 	type Message,
 } from "@electric-sql/d2ts";
-import type { CTE } from "./query/cte.js";
-import { applyFilter } from "./query/filterEngine.js";
-import { createItemSortFunction } from "./utils/index.js";
+import type { CTE } from "../query/cte.js";
+import { applyFilter } from "../query/filterEngine.js";
+import { createItemSortFunction } from "../utils/index.js";
 
 export type KeyedChange<T> = [KeyValue<string, T>, number];
 

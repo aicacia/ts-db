@@ -35,4 +35,4 @@ export {
 	createTestSingleton,
 	type TestCollectionResult,
 	type TestSingletonResult,
-} from "./test-utils.js";
+} from "./test-utils/index.js";
