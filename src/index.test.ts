@@ -1,8 +1,9 @@
 import test from "tape";
-import { createCollection } from "./collection/index.js";
-import { createSingleton } from "./singleton/index.js";
-import { MemoryAdapter, MemorySingletonAdapter } from "./adapters/index.js";
 import {
+	createCollection,
+	createSingleton,
+	MemoryAdapter,
+	MemorySingletonAdapter,
 	type CTE,
 	and,
 	compare,
@@ -12,7 +13,7 @@ import {
 	includes,
 	lessThan,
 	or,
-} from "./query/cte.js";
+} from "./index.js";
 
 interface Recipe {
 	id: string;
