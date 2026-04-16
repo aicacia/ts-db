@@ -20,8 +20,8 @@ export type {
 	OrderDirection,
 	QueryCompiler,
 	QuerySubscriptionResult,
-} from "./queryBuilder.js";
-export { QueryBuilder, createQueryBuilder } from "./queryBuilder.js";
+} from "./query/queryBuilder.js";
+export { QueryBuilder, createQueryBuilder } from "./query/queryBuilder.js";
 
 // CTE types and operations
 export type { CTE, CTEFilter, CTEOrderBy } from "./cte.js";
@@ -58,16 +58,16 @@ export type {
 export type {
 	SubscriptionAdapter,
 	SubscriptionAdapterFactory,
-} from "./subscriptionManager.js";
-export { SubscriptionManager, createSubscriptionManager } from "./subscriptionManager.js";
-export type { SourceSubscription } from "./sourceSubscription.js";
-export { createSourceSubscription } from "./sourceSubscription.js";
+} from "./query/subscriptionManager.js";
+export { SubscriptionManager, createSubscriptionManager } from "./query/subscriptionManager.js";
+export type { SourceSubscription } from "./query/sourceSubscription.js";
+export { createSourceSubscription } from "./query/sourceSubscription.js";
 export type {
 	QueryExecutionPort,
 	QuerySubscriptionServiceConfig,
 	QuerySubscriptionService,
-} from "./querySubscriptionService.js";
-export { createQuerySubscriptionService } from "./querySubscriptionService.js";
+} from "./query/querySubscriptionService.js";
+export { createQuerySubscriptionService } from "./query/querySubscriptionService.js";
 
 // Filter engine
 export {

@@ -1,12 +1,12 @@
 import test from "tape";
 import { createCollection } from "./collection.js";
-import { createQueryBuilder } from "./queryBuilder.js";
+import { createQueryBuilder } from "./query/queryBuilder.js";
 import { MemoryAdapter } from "./memoryAdapter.js";
 import type { SourceAdapter } from "./types.js";
 import type {
 	QuerySubscriptionService,
 	QuerySubscriptionResult,
-} from "./querySubscriptionService.js";
+} from "./query/querySubscriptionService.js";
 import type { CTE } from "./cte.js";
 
 interface Recipe {

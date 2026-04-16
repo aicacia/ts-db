@@ -1,5 +1,5 @@
-import type { FieldPath, UnsubscribeFn } from "./types.js";
-import type { ICollection } from "./collection.js";
+import type { FieldPath, UnsubscribeFn } from "../types.js";
+import type { ICollection } from "../collection.js";
 import {
 	type CTE,
 	type CTEComparisonOperator,
@@ -19,9 +19,9 @@ import {
 	lessThanOrEqual,
 	notEqual,
 	or as createOrFilter,
-} from "./cte.js";
-import { applyCTE } from "./filterEngine.js";
-import { getFieldValue } from "./utils.js";
+} from "../cte.js";
+import { applyCTE } from "../filterEngine.js";
+import { getFieldValue } from "../utils.js";
 
 function assertNever(value: never): never {
 	throw new Error(`Unexpected value: ${String(value)}`);

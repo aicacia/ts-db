@@ -1,7 +1,7 @@
-import type { SourceAdapter, UnsubscribeFn } from "./types.js";
+import type { SourceAdapter, UnsubscribeFn } from "../types.js";
 import { getCTEIdentity } from "./queryIdentity.js";
-import type { CTE } from "./cte.js";
-import { toError } from "./utils.js";
+import type { CTE } from "../cte.js";
+import { toError } from "../utils.js";
 import {
 	createSubscriptionManager,
 	type SubscriptionManager,

@@ -1,4 +1,4 @@
-import type { CTE } from "./cte.js";
+import type { CTE } from "../cte.js";
 
 type IdentityPrimitive = string | number | boolean | null;
 type IdentityValue =

@@ -1,5 +1,5 @@
-import type { CTE } from "./cte.js";
-import { applyCTE } from "./filterEngine.js";
+import type { CTE } from "../cte.js";
+import { applyCTE } from "../filterEngine.js";
 
 export interface QueryExecutionPort<T> {
 	execute(cte: CTE<T>, docs: T[]): T[];

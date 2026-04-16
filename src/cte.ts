@@ -143,7 +143,7 @@ function normalizeIdentityValue(
 /**
  * Build a deterministic identity for a CTE so equivalent query objects share subscriptions.
  */
-export { getCTEIdentity } from "./queryIdentity.js";
+export { getCTEIdentity } from "./query/queryIdentity.js";
 
 export function compare<T>(
 	field: FieldPath<T>,

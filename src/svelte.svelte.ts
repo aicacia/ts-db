@@ -1,5 +1,5 @@
 import type { UnsubscribeFn } from "./types.js";
-import type { IQueryBuilder } from "./queryBuilder.js";
+import type { IQueryBuilder } from "./query/queryBuilder.js";
 import type { ISingleton } from "./singleton.js";
 
 export interface StoreState<T> {

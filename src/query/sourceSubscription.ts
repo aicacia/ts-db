@@ -1,6 +1,6 @@
-import type { SourceAdapter, UnsubscribeFn } from "./types.js";
+import type { SourceAdapter, UnsubscribeFn } from "../types.js";
 import type { SnapshotSubscriptionAdapter } from "./subscriptionManager.js";
-import { safeInvoke, toError } from "./utils.js";
+import { safeInvoke, toError } from "../utils.js";
 
 export interface SourceSubscription<T> extends SnapshotSubscriptionAdapter<T> {}
 

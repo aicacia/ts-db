@@ -1,7 +1,7 @@
 import test from "tape";
 import { createDefaultQueryExecutionPort } from "./queryExecution.js";
-import { equal } from "./cte.js";
-import type { CTE } from "./cte.js";
+import { equal } from "../cte.js";
+import type { CTE } from "../cte.js";
 
 interface Recipe {
 	id: string;
