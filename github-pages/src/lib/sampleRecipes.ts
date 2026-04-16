@@ -130,18 +130,18 @@ const sampleComments: Omit<Comment, 'id' | 'createdAt' | 'updatedAt'>[] = [
 	{
 		recipeId: 'recipe-1',
 		author: 'Ava',
-		text: 'These cookies were perfect and easy to make!',
+		text: 'These cookies were perfect and easy to make!'
 	},
 	{
 		recipeId: 'recipe-2',
 		author: 'Leo',
-		text: 'I swapped the pasta for gluten-free and it still worked great.',
+		text: 'I swapped the pasta for gluten-free and it still worked great.'
 	},
 	{
 		recipeId: 'recipe-2',
 		author: 'Maya',
-		text: 'Fresh basil really makes this recipe pop.',
-	},
+		text: 'Fresh basil really makes this recipe pop.'
+	}
 ];
 
 export async function populateSampleRecipes(): Promise<void> {
@@ -163,7 +163,7 @@ export async function populateSampleComments(): Promise<void> {
 			...sampleComment,
 			id: Math.random().toString(36).substring(2),
 			createdAt: new Date(),
-			updatedAt: new Date(),
+			updatedAt: new Date()
 		});
 	}
 }

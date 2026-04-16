@@ -7,7 +7,7 @@ export const commentSchema = v.object({
 	author: v.string(),
 	text: v.string(),
 	createdAt: v.date(),
-	updatedAt: v.date(),
+	updatedAt: v.date()
 });
 
 export type Comment = v.InferOutput<typeof commentSchema>;
@@ -15,5 +15,5 @@ export type Comment = v.InferOutput<typeof commentSchema>;
 export const commentsCollection = createCollection({
 	id: 'comments',
 	source: new MemoryAdapter<Comment>('id'),
-	keyOf: (doc) => doc.id,
+	keyOf: (doc) => doc.id
 });
