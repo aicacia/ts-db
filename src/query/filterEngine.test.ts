@@ -1,6 +1,6 @@
 import test from "tape";
-import type { CTEComparisonFilter, CTEOrderBy } from "./query/cte.js";
-import { applyCTE, applyFilter, applyOrderBy } from "./query/filterEngine.js";
+import type { CTEComparisonFilter, CTEOrderBy } from "./cte.js";
+import { applyCTE, applyFilter, applyOrderBy } from "./filterEngine.js";
 
 interface Recipe {
 	id: string;

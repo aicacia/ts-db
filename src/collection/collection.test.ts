@@ -1,13 +1,13 @@
 import test from "tape";
-import { createCollection } from "./collection/index.js";
-import { createQueryBuilder } from "./query/queryBuilder.js";
-import { MemoryAdapter } from "./adapters/index.js";
-import type { SourceAdapter } from "./types/index.js";
+import { createCollection } from "./index.js";
+import { createQueryBuilder } from "../query/index.js";
+import { MemoryAdapter } from "../adapters/index.js";
+import type { SourceAdapter } from "../types/index.js";
 import type {
 	QuerySubscriptionService,
 	QuerySubscriptionResult,
-} from "./query/querySubscriptionService.js";
-import type { CTE } from "./query/cte.js";
+} from "../query/index.js";
+import type { CTE } from "../query/index.js";
 
 interface Recipe {
 	id: string;
