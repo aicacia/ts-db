@@ -48,6 +48,13 @@ export {
 
 // Adapters
 export { MemoryAdapter, MemorySingletonAdapter } from "./memoryAdapter.js";
+export { HttpSourceAdapter } from "./httpAdapter.js";
+export type {
+	HttpSourceAdapterConfig,
+	HttpSourceAdapterLiveConfig,
+	HttpOperation,
+	LiveTransportMethod,
+} from "./httpAdapter.js";
 export type {
 	SubscriptionAdapter,
 	SubscriptionAdapterFactory,
