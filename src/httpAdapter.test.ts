@@ -41,8 +41,16 @@ test("HttpSourceAdapter: subscribe loads initial documents", async (t) => {
 	await delay(0);
 
 	t.equal(calls.length, 1, "Should fetch collection once on subscribe");
-	t.equal(calls[0].input, "https://api.example.com/dogs", "Should call list endpoint");
-	t.deepEqual(updates, [[], docs], "Should receive initial empty state and then fetched docs");
+	t.equal(
+		calls[0].input,
+		"https://api.example.com/dogs",
+		"Should call list endpoint",
+	);
+	t.deepEqual(
+		updates,
+		[[], docs],
+		"Should receive initial empty state and then fetched docs",
+	);
 
 	unsub();
 	t.end();
@@ -79,14 +87,19 @@ test("HttpSourceAdapter: subscribe forwards query metadata to requestFactory", a
 
 	await delay(0);
 
-	t.deepEqual(receivedQuery, query, "Should forward query metadata to requestFactory");
+	t.deepEqual(
+		receivedQuery,
+		query,
+		"Should forward query metadata to requestFactory",
+	);
 
 	unsub();
 	t.end();
 });
 
 test("HttpSourceAdapter: create/update/delete use configured endpoints", async (t) => {
-	const requests: Array<{ method: string; url: string; body?: string | null }> = [];
+	const requests: Array<{ method: string; url: string; body?: string | null }> =
+		[];
 
 	const adapter = new HttpSourceAdapter<Dog>({
 		baseUrl: "https://api.example.com",
@@ -95,7 +108,11 @@ test("HttpSourceAdapter: create/update/delete use configured endpoints", async (
 		live: { method: "none" },
 		fetcher: async (input: RequestInfo | URL, init?: RequestInit) => {
 			const requestUrl = String(input);
-			requests.push({ method: init?.method ?? "GET", url: requestUrl, body: init?.body as string | undefined });
+			requests.push({
+				method: init?.method ?? "GET",
+				url: requestUrl,
+				body: init?.body as string | undefined,
+			});
 			return {
 				ok: true,
 				status: 200,
@@ -109,13 +126,33 @@ test("HttpSourceAdapter: create/update/delete use configured endpoints", async (
 	await adapter.update("1", { name: "Rexie" });
 	await adapter.delete("1");
 
-	const crudRequests = requests.filter((request) => request.url !== "https://api.example.com/dogs" || request.method !== "GET");
+	const crudRequests = requests.filter(
+		(request) =>
+			request.url !== "https://api.example.com/dogs" ||
+			request.method !== "GET",
+	);
 
 	t.equal(crudRequests[0]?.method, "POST", "create should use POST");
-	t.equal(crudRequests[0]?.url, "https://api.example.com/dogs", "create should target collection path");
-	t.equal(crudRequests[1]?.method, "PATCH", "update should use PATCH by default");
-	t.equal(crudRequests[1]?.url, "https://api.example.com/dogs/1", "update should target item path");
+	t.equal(
+		crudRequests[0]?.url,
+		"https://api.example.com/dogs",
+		"create should target collection path",
+	);
+	t.equal(
+		crudRequests[1]?.method,
+		"PATCH",
+		"update should use PATCH by default",
+	);
+	t.equal(
+		crudRequests[1]?.url,
+		"https://api.example.com/dogs/1",
+		"update should target item path",
+	);
 	t.equal(crudRequests[2]?.method, "DELETE", "delete should use DELETE");
-	t.equal(crudRequests[2]?.url, "https://api.example.com/dogs/1", "delete should target item path");
+	t.equal(
+		crudRequests[2]?.url,
+		"https://api.example.com/dogs/1",
+		"delete should target item path",
+	);
 	t.end();
 });

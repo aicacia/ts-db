@@ -102,13 +102,29 @@ export function applyFilter<T>(
 			case "notEqual":
 				return fieldValue !== filter.value;
 			case "greaterThan":
-				return isNumber(fieldValue) && isNumber(filter.value) && fieldValue > filter.value;
+				return (
+					isNumber(fieldValue) &&
+					isNumber(filter.value) &&
+					fieldValue > filter.value
+				);
 			case "lessThan":
-				return isNumber(fieldValue) && isNumber(filter.value) && fieldValue < filter.value;
+				return (
+					isNumber(fieldValue) &&
+					isNumber(filter.value) &&
+					fieldValue < filter.value
+				);
 			case "greaterThanOrEqual":
-				return isNumber(fieldValue) && isNumber(filter.value) && fieldValue >= filter.value;
+				return (
+					isNumber(fieldValue) &&
+					isNumber(filter.value) &&
+					fieldValue >= filter.value
+				);
 			case "lessThanOrEqual":
-				return isNumber(fieldValue) && isNumber(filter.value) && fieldValue <= filter.value;
+				return (
+					isNumber(fieldValue) &&
+					isNumber(filter.value) &&
+					fieldValue <= filter.value
+				);
 			case "in":
 				return Array.isArray(filter.value)
 					? filter.value.includes(fieldValue)

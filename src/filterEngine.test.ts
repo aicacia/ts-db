@@ -81,9 +81,7 @@ test("Filter engine: applyOrderBy returns a sorted copy without mutating input",
 		{ id: "1", name: "A" },
 	];
 
-	const orderBy: CTEOrderBy<Recipe>[] = [
-		{ field: "name", direction: "asc" },
-	];
+	const orderBy: CTEOrderBy<Recipe>[] = [{ field: "name", direction: "asc" }];
 	const sorted = applyOrderBy(docs, orderBy);
 
 	t.deepEqual(

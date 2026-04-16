@@ -137,7 +137,10 @@ test("Collection: query() delegates builder creation to injected QuerySubscripti
 
 	collection.query().subscribe(
 		() => {
-			t.ok(queryBuilt, "Should call createQueryBuilder on injected QuerySubscriptionService");
+			t.ok(
+				queryBuilt,
+				"Should call createQueryBuilder on injected QuerySubscriptionService",
+			);
 		},
 		() => t.fail("unexpected error"),
 	);
@@ -149,9 +152,9 @@ test("Collection: allows injected QueryExecutionPort", (t) => {
 	const source: SourceAdapter<Recipe> = {
 		subscribe(onUpdate) {
 			onUpdate([
-			{ id: "1", name: "Pasta", status: "active" },
-			{ id: "2", name: "Soup", status: "archived" },
-		]);
+				{ id: "1", name: "Pasta", status: "active" },
+				{ id: "2", name: "Soup", status: "archived" },
+			]);
 			return () => {
 				/* noop */
 			};
@@ -223,7 +226,8 @@ test("Collection query: join filters by matching root collection to joined colle
 	});
 
 	const results: RecipeWithItem[] = [];
-	const unsub = recipes.query()
+	const unsub = recipes
+		.query()
 		.join(items, "itemId")
 		.subscribe(
 			(docs) => results.push(...docs),
@@ -289,7 +293,8 @@ test("Collection query: join supports multiple root-level joins", (t) => {
 	});
 
 	const results: RecipeWithItemSupplier[] = [];
-	const unsub = recipes.query()
+	const unsub = recipes
+		.query()
 		.join(items, "itemId")
 		.join(suppliers, "supplierId")
 		.subscribe(
@@ -298,7 +303,11 @@ test("Collection query: join supports multiple root-level joins", (t) => {
 		);
 
 	t.equal(results.length, 1, "Should return only documents matching all joins");
-	t.equal(results[0].id, "1", "Should return the root doc that matches every join");
+	t.equal(
+		results[0].id,
+		"1",
+		"Should return the root doc that matches every join",
+	);
 	unsub();
 	t.end();
 });

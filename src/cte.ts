@@ -143,7 +143,10 @@ function normalizeIdentityValue(
 /**
  * Build a deterministic identity for a CTE so equivalent query objects share subscriptions.
  */
-export { getCTEIdentity } from "./query/queryIdentity.js";
+export function getCTEIdentity<T>(cte: CTE<T>): string {
+	const normalized = normalizeIdentityValue(cte, new WeakSet<object>());
+	return JSON.stringify(normalized);
+}
 
 export function compare<T>(
 	field: FieldPath<T>,

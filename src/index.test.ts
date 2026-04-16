@@ -1204,11 +1204,11 @@ test("CTE identity: stable across object key order", (t) => {
 			},
 		],
 		orderBy: [{ field: "prepTime", direction: "asc" }],
-	} satisfies CTE<{status: number; prepTime: number}>;
+	} satisfies CTE<{ status: number; prepTime: number }>;
 
 	const cteB = {
 		orderBy: [{ direction: "asc", field: "prepTime" }],
-		version: "1.0" , 
+		version: "1.0",
 		filters: [
 			{
 				value: "active",
@@ -1217,7 +1217,7 @@ test("CTE identity: stable across object key order", (t) => {
 				type: "comparison",
 			},
 		],
-	} satisfies CTE<{status: number; prepTime: number}>;
+	} satisfies CTE<{ status: number; prepTime: number }>;
 
 	t.equal(
 		getCTEIdentity(cteA),

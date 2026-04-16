@@ -43,7 +43,11 @@ export class MemoryAdapter<T extends Record<string, any>>
 
 		this._subscriptions.push(entry);
 
-		const error = safeInvoke(onUpdate, Array.from(this._documents.values()), onError);
+		const error = safeInvoke(
+			onUpdate,
+			Array.from(this._documents.values()),
+			onError,
+		);
 		if (error) {
 			throw error;
 		}

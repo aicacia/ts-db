@@ -1,10 +1,11 @@
 import type { FieldPath, UnsubscribeFn } from "../types.js";
 import type { ICollection } from "../collection.js";
+
 import {
 	type CTE,
 	type CTEComparisonOperator,
 	type CTEFilter,
-	and as createAndFilter,
+	and,
 	compare,
 	contains,
 	containsIgnoreCase,
@@ -18,7 +19,7 @@ import {
 	lessThan,
 	lessThanOrEqual,
 	notEqual,
-	or as createOrFilter,
+	or,
 } from "../cte.js";
 import { applyCTE } from "../filterEngine.js";
 import { getFieldValue } from "../utils.js";
@@ -86,8 +87,11 @@ function cloneCTE<T>(cte: CTE<T>): CTE<T> {
 		joins: cte.joins ? cte.joins.map((join) => ({ ...join })) : undefined,
 		ctes: cte.ctes
 			? Object.fromEntries(
-				Object.entries(cte.ctes).map(([key, childCTE]) => [key, cloneCTE(childCTE)]),
-			)
+					Object.entries(cte.ctes).map(([key, childCTE]) => [
+						key,
+						cloneCTE(childCTE),
+					]),
+				)
 			: undefined,
 	};
 }
@@ -123,10 +127,7 @@ function computeJoinIndex(
 	return index;
 }
 
-function buildJoinIndexes<T>(
-	joins: JoinConfig<T>[],
-	rightDocs: unknown[][],
-) {
+function buildJoinIndexes<T>(joins: JoinConfig<T>[], rightDocs: unknown[][]) {
 	return joins.map((join, index) =>
 		computeJoinIndex(rightDocs[index] ?? [], join.rightField),
 	);
@@ -141,11 +142,12 @@ function applyJoins<T>(
 
 	return docs
 		.map((doc) => {
-			let result: T & Record<string, unknown[]> = { ...doc };
+			let result = { ...doc } as T & Record<string, unknown[]>;
 
 			for (const [index, join] of joins.entries()) {
 				const leftKey = getFieldValue(doc, join.leftField);
-				const lookupKey = leftKey === null || leftKey === undefined ? "" : String(leftKey);
+				const lookupKey =
+					leftKey === null || leftKey === undefined ? "" : String(leftKey);
 				const matches = indexes[index]?.get(lookupKey) ?? [];
 
 				result = {
@@ -451,11 +453,11 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 	}
 
 	and(...filters: CTEFilter<T>[]): IQueryBuilder<T> {
-		return this.where(createAndFilter(...filters));
+		return this.where(and(...filters));
 	}
 
 	or(...filters: CTEFilter<T>[]): IQueryBuilder<T> {
-		return this.where(createOrFilter(...filters));
+		return this.where(or(...filters));
 	}
 
 	join<Right>(
@@ -464,8 +466,7 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 		rightField?: FieldPath<Right>,
 		type: JoinType = "inner",
 	): IQueryBuilder<T & JoinResult<Right>> {
-		const resolvedRightField =
-			rightField ?? rightCollection.getKeyField();
+		const resolvedRightField = rightField ?? rightCollection.getKeyField();
 
 		if (!resolvedRightField) {
 			throw new Error(
@@ -490,7 +491,7 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 			type,
 		});
 
-		return this;
+		return this as unknown as QueryBuilder<T & JoinResult<Right>>;
 	}
 
 	orderBy(
@@ -582,13 +583,10 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 		});
 
 		const joinUnsubs = this._joins.map((join, index) =>
-			join.collection.query().subscribe(
-				(docs) => {
-					rightRows[index] = docs;
-					emit();
-				},
-				errorHandler,
-			),
+			join.collection.query().subscribe((docs) => {
+				rightRows[index] = docs;
+				emit();
+			}, errorHandler),
 		);
 
 		return () => {
@@ -613,6 +611,8 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 	}
 }
 
-export function createQueryBuilder<T>(compile?: QueryCompiler<T>): QueryBuilder<T> {
+export function createQueryBuilder<T>(
+	compile?: QueryCompiler<T>,
+): QueryBuilder<T> {
 	return new QueryBuilder<T>(compile);
 }

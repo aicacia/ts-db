@@ -1,9 +1,4 @@
-export type FieldPath<T> = {
-	// biome-ignore lint/suspicious/noExplicitAny: need to support any object
-	[K in keyof T & string]: T[K] extends Record<string, any>
-		? K | `${K}.${FieldPath<T[K]>}`
-		: K;
-}[keyof T & string];
+export type FieldPath<T> = string;
 
 /** Runtime state reported by adapters. */
 export interface AdapterStatus {

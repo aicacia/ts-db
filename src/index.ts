@@ -59,7 +59,10 @@ export type {
 	SubscriptionAdapter,
 	SubscriptionAdapterFactory,
 } from "./query/subscriptionManager.js";
-export { SubscriptionManager, createSubscriptionManager } from "./query/subscriptionManager.js";
+export {
+	SubscriptionManager,
+	createSubscriptionManager,
+} from "./query/subscriptionManager.js";
 export type { SourceSubscription } from "./query/sourceSubscription.js";
 export { createSourceSubscription } from "./query/sourceSubscription.js";
 export type {

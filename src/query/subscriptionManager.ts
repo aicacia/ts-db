@@ -2,203 +2,209 @@ import type { UnsubscribeFn } from "../types.js";
 import { toError } from "../utils.js";
 
 export interface SubscriptionAdapter<T> {
-  subscribe(
-    onUpdate: (rows: T[]) => void,
-    onError: (err: Error) => void,
-    query?: unknown,
-  ): UnsubscribeFn;
-  getSnapshot?: (query?: unknown) => T[];
+	subscribe(
+		onUpdate: (rows: T[]) => void,
+		onError: (err: Error) => void,
+		query?: unknown,
+	): UnsubscribeFn;
+	getSnapshot?: (query?: unknown) => T[];
 }
 
 export type SnapshotSubscriptionAdapter<T> = SubscriptionAdapter<T> & {
-  getSnapshot(): T[];
+	getSnapshot(): T[];
 };
 
 export type SubscriptionAdapterFactory<T> = () => SubscriptionAdapter<T>;
 
 type Subscriber<T> = {
-  onUpdate: (rows: T[]) => void;
-  onError?: (err: Error) => void;
+	onUpdate: (rows: T[]) => void;
+	onError?: (err: Error) => void;
 };
 
 interface Entry<T> {
-  adapter?: SubscriptionAdapter<T>;
-  adapterUnsubscribe?: UnsubscribeFn;
-  subscribers: Set<Subscriber<T>>;
-  lastResults: T[] | null;
+	adapter?: SubscriptionAdapter<T>;
+	adapterUnsubscribe?: UnsubscribeFn;
+	subscribers: Set<Subscriber<T>>;
+	lastResults: T[] | null;
 }
 
 export class SubscriptionManager<T> {
-  private _entries: Map<string, Entry<T>> = new Map();
+	private _entries: Map<string, Entry<T>> = new Map();
 
-  private _copySubscribers(entry: Entry<T>): Subscriber<T>[] {
-    return Array.from(entry.subscribers.values());
-  }
+	private _copySubscribers(entry: Entry<T>): Subscriber<T>[] {
+		return Array.from(entry.subscribers.values());
+	}
 
-  private _dispatchSubscriberError(subscribers: Subscriber<T>[], error: Error): void {
-    let handlerFailure: unknown;
-    let missingErrorHandler = false;
+	private _dispatchSubscriberError(
+		subscribers: Subscriber<T>[],
+		error: Error,
+	): void {
+		let handlerFailure: unknown;
+		let missingErrorHandler = false;
 
-    for (const subscriber of subscribers) {
-      if (subscriber.onError) {
-        try {
-          subscriber.onError(error);
-        } catch (hErr) {
-          handlerFailure = hErr;
-        }
-      } else {
-        missingErrorHandler = true;
-      }
-    }
+		for (const subscriber of subscribers) {
+			if (subscriber.onError) {
+				try {
+					subscriber.onError(error);
+				} catch (hErr) {
+					handlerFailure = hErr;
+				}
+			} else {
+				missingErrorHandler = true;
+			}
+		}
 
-    if (missingErrorHandler) {
-      throw error;
-    }
+		if (missingErrorHandler) {
+			throw error;
+		}
 
-    if (handlerFailure !== undefined && subscribers.length === 1) {
-      throw toError(handlerFailure);
-    }
-  }
+		if (handlerFailure !== undefined && subscribers.length === 1) {
+			throw toError(handlerFailure);
+		}
+	}
 
-  subscribe(opts: {
-    id: string;
-    adapterFactory: SubscriptionAdapterFactory<T>;
-    onUpdate: (rows: T[]) => void;
-    onError?: (err: Error) => void;
-  }): () => void {
-    const id = opts.id;
-    
-    let entry = this._entries.get(id);
+	subscribe(opts: {
+		id: string;
+		adapterFactory: SubscriptionAdapterFactory<T>;
+		onUpdate: (rows: T[]) => void;
+		onError?: (err: Error) => void;
+	}): () => void {
+		const id = opts.id;
 
-    if (!entry) {
-      entry = {
-        adapter: undefined,
-        adapterUnsubscribe: undefined,
-        subscribers: new Set(),
-        lastResults: null,
-      };
-      this._entries.set(id, entry);
-    }
+		let entry = this._entries.get(id);
 
-    const subscriber: Subscriber<T> = {
-      onUpdate: opts.onUpdate,
-      onError: opts.onError,
-    };
+		if (!entry) {
+			entry = {
+				adapter: undefined,
+				adapterUnsubscribe: undefined,
+				subscribers: new Set(),
+				lastResults: null,
+			};
+			this._entries.set(id, entry);
+		}
 
-    // Add subscriber before adapter.subscribe so synchronous adapter pushes
-    // will reach this subscriber immediately.
-    entry.subscribers.add(subscriber);
+		const subscriber: Subscriber<T> = {
+			onUpdate: opts.onUpdate,
+			onError: opts.onError,
+		};
 
-    const hadAdapterBefore = Boolean(entry.adapter);
+		// Add subscriber before adapter.subscribe so synchronous adapter pushes
+		// will reach this subscriber immediately.
+		entry.subscribers.add(subscriber);
 
-    if (!entry.adapter) {
-      const adapter = opts.adapterFactory();
-      entry.adapter = adapter;
+		const hadAdapterBefore = Boolean(entry.adapter);
 
-      const internalUpdate = (rows: T[]) => {
-        entry.lastResults = rows;
+		if (!entry.adapter) {
+			const adapter = opts.adapterFactory();
+			entry.adapter = adapter;
 
-        const subs = this._copySubscribers(entry);
+			const internalUpdate = (rows: T[]) => {
+				entry.lastResults = rows;
 
-        let firstUpdateError: Error | undefined;
-        for (const s of subs) {
-          try {
-            s.onUpdate(rows);
-          } catch (uErr) {
-            if (!firstUpdateError) {
-              firstUpdateError = toError(uErr);
-            }
-          }
-        }
+				const subs = this._copySubscribers(entry);
 
-        if (firstUpdateError) {
-          this._dispatchSubscriberError(subs, firstUpdateError);
-        }
-      };
+				let firstUpdateError: Error | undefined;
+				for (const s of subs) {
+					try {
+						s.onUpdate(rows);
+					} catch (uErr) {
+						if (!firstUpdateError) {
+							firstUpdateError = toError(uErr);
+						}
+					}
+				}
 
-      const internalError = (err: Error) => {
-        const subs = this._copySubscribers(entry);
-        this._dispatchSubscriberError(subs, toError(err));
-      };
+				if (firstUpdateError) {
+					this._dispatchSubscriberError(subs, firstUpdateError);
+				}
+			};
 
-      // Start adapter subscription
-      entry.adapterUnsubscribe = adapter.subscribe(internalUpdate, internalError);
-    }
-    const justCreatedAdapter = !hadAdapterBefore && Boolean(entry.adapter);
+			const internalError = (err: Error) => {
+				const subs = this._copySubscribers(entry);
+				this._dispatchSubscriberError(subs, toError(err));
+			};
 
-    // If we already have cached results (from a previous adapter subscription), send them immediately
-    if (entry.lastResults !== null && !justCreatedAdapter) {
-      try {
-        opts.onUpdate(entry.lastResults);
-      } catch (err) {
-        const normalized = toError(err);
-        if (opts.onError) {
-          try {
-            opts.onError(normalized);
-          } catch (e) {
-            // If only one subscriber, mimic previous behaviour and throw
-            if (entry.subscribers.size === 1) {
-              throw toError(e);
-            }
-          }
-        } else {
-          // No error handler provided -> throw
-          throw normalized;
-        }
-      }
-    }
+			// Start adapter subscription
+			entry.adapterUnsubscribe = adapter.subscribe(
+				internalUpdate,
+				internalError,
+			);
+		}
+		const justCreatedAdapter = !hadAdapterBefore && Boolean(entry.adapter);
 
-    // Return unsubscribe
-    return () => {
-      const current = this._entries.get(id);
-      if (!current) {
-        return;
-      }
+		// If we already have cached results (from a previous adapter subscription), send them immediately
+		if (entry.lastResults !== null && !justCreatedAdapter) {
+			try {
+				opts.onUpdate(entry.lastResults);
+			} catch (err) {
+				const normalized = toError(err);
+				if (opts.onError) {
+					try {
+						opts.onError(normalized);
+					} catch (e) {
+						// If only one subscriber, mimic previous behaviour and throw
+						if (entry.subscribers.size === 1) {
+							throw toError(e);
+						}
+					}
+				} else {
+					// No error handler provided -> throw
+					throw normalized;
+				}
+			}
+		}
 
-      current.subscribers.delete(subscriber);
+		// Return unsubscribe
+		return () => {
+			const current = this._entries.get(id);
+			if (!current) {
+				return;
+			}
 
-      if (current.subscribers.size === 0) {
-        // teardown adapter subscription
-        if (current.adapterUnsubscribe) {
-          try {
-            current.adapterUnsubscribe();
-          } catch (e) {
-            // ignore adapter unsubscribe errors
-          }
-        }
-        this._entries.delete(id);
-      }
-    };
-  }
+			current.subscribers.delete(subscriber);
 
-  getSnapshot(id: string): T[] | null {
-    const entry = this._entries.get(id);
-    if (!entry) {
-      return null;
-    }
+			if (current.subscribers.size === 0) {
+				// teardown adapter subscription
+				if (current.adapterUnsubscribe) {
+					try {
+						current.adapterUnsubscribe();
+					} catch (e) {
+						// ignore adapter unsubscribe errors
+					}
+				}
+				this._entries.delete(id);
+			}
+		};
+	}
 
-    if (entry.lastResults !== null) {
-      return entry.lastResults;
-    }
+	getSnapshot(id: string): T[] | null {
+		const entry = this._entries.get(id);
+		if (!entry) {
+			return null;
+		}
 
-    if (!entry.adapter) {
-      return null;
-    }
+		if (entry.lastResults !== null) {
+			return entry.lastResults;
+		}
 
-    const snapshotProvider = entry.adapter.getSnapshot;
+		if (!entry.adapter) {
+			return null;
+		}
 
-    if (!snapshotProvider) {
-      return null;
-    }
+		const snapshotProvider = entry.adapter.getSnapshot;
 
-    try {
-      return snapshotProvider.call(entry.adapter);
-    } catch {
-      return null;
-    }
-  }
+		if (!snapshotProvider) {
+			return null;
+		}
+
+		try {
+			return snapshotProvider.call(entry.adapter);
+		} catch {
+			return null;
+		}
+	}
 }
 
 export function createSubscriptionManager<T>() {
-  return new SubscriptionManager<T>();
+	return new SubscriptionManager<T>();
 }

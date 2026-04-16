@@ -1,7 +1,15 @@
-import type { AdapterStatus, SourceAdapter, UnsubscribeFn, FieldPath } from "./types.js";
+import type {
+	AdapterStatus,
+	SourceAdapter,
+	UnsubscribeFn,
+	FieldPath,
+} from "./types.js";
 import type { CTE } from "./cte.js";
 import type { IQueryBuilder } from "./query/queryBuilder.js";
-import { createQuerySubscriptionService, type QuerySubscriptionService } from "./query/querySubscriptionService.js";
+import {
+	createQuerySubscriptionService,
+	type QuerySubscriptionService,
+} from "./query/querySubscriptionService.js";
 import type { QueryExecutionPort } from "./query/querySubscriptionService.js";
 import type { SubscriptionManager } from "./query/subscriptionManager.js";
 import type { SourceSubscription } from "./query/sourceSubscription.js";
@@ -99,7 +107,6 @@ export class Collection<T> implements ICollection<T> {
 	getKeyField(): FieldPath<T> | undefined {
 		return this._keyField;
 	}
-
 }
 
 export function createCollection<T>(

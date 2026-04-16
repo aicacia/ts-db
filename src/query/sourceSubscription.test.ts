@@ -51,19 +51,37 @@ test("SourceSubscription: subscribes to source only once for multiple listeners"
 	);
 
 	t.equal(subscribeCalls, 1, "Should subscribe to source adapter only once");
-	t.deepEqual(updatesA[0], [], "First subscriber should receive initial snapshot");
-	t.deepEqual(updatesB[0], [], "Second subscriber should receive initial snapshot");
+	t.deepEqual(
+		updatesA[0],
+		[],
+		"First subscriber should receive initial snapshot",
+	);
+	t.deepEqual(
+		updatesB[0],
+		[],
+		"Second subscriber should receive initial snapshot",
+	);
 
-	onUpdate?.([
-		{ id: "1", name: "Pasta", status: "active" },
-	]);
+	onUpdate?.([{ id: "1", name: "Pasta", status: "active" }]);
 
-	t.equal(updatesA.length, 2, "First subscriber should receive update from source");
-	t.equal(updatesB.length, 2, "Second subscriber should receive update from source");
+	t.equal(
+		updatesA.length,
+		2,
+		"First subscriber should receive update from source",
+	);
+	t.equal(
+		updatesB.length,
+		2,
+		"Second subscriber should receive update from source",
+	);
 
 	unsubA();
 	unsubB();
-	t.equal(unsubscribeCalls, 1, "Should unsubscribe from source adapter once after last listener");
+	t.equal(
+		unsubscribeCalls,
+		1,
+		"Should unsubscribe from source adapter once after last listener",
+	);
 	t.end();
 });
 
@@ -97,9 +115,7 @@ test("SourceSubscription: getSnapshot returns latest docs", (t) => {
 	);
 
 	if (onUpdate) {
-		onUpdate([
-			{ id: "2", name: "Soup", status: "archived" },
-		]);
+		onUpdate([{ id: "2", name: "Soup", status: "archived" }]);
 	}
 
 	t.deepEqual(
@@ -137,7 +153,11 @@ test("SourceSubscription: propagates adapter errors to subscribers", (t) => {
 		() => t.fail("unexpected update"),
 		(error) => {
 			didError = true;
-			t.equal(error.message, "source-error", "Should receive source adapter error");
+			t.equal(
+				error.message,
+				"source-error",
+				"Should receive source adapter error",
+			);
 		},
 	);
 
@@ -175,12 +195,19 @@ test("SourceSubscription: routes subscriber update errors to listener error hand
 		},
 		(error) => {
 			didError = true;
-			t.equal(error.message, "listener-failure", "Should route listener failure to error callback");
+			t.equal(
+				error.message,
+				"listener-failure",
+				"Should route listener failure to error callback",
+			);
 		},
 	);
 
 	onUpdate?.([{ id: "1", name: "Pasta", status: "active" }]);
 
-	t.true(didError, "Listener error should be handled by subscriber error callback");
+	t.true(
+		didError,
+		"Listener error should be handled by subscriber error callback",
+	);
 	t.end();
 });

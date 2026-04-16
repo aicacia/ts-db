@@ -36,18 +36,31 @@ export interface HttpSourceAdapterConfig {
 	) => RequestInit;
 }
 
-const defaultLiveConfig: Required<Pick<HttpSourceAdapterLiveConfig, "method" | "pollInterval" | "retryDelay" | "maxRetries">> = {
+const defaultLiveConfig: Required<
+	Pick<
+		HttpSourceAdapterLiveConfig,
+		"method" | "pollInterval" | "retryDelay" | "maxRetries"
+	>
+> = {
 	method: "polling",
 	pollInterval: 5000,
 	retryDelay: 2000,
 	maxRetries: 3,
 };
 
-type ResolvedHttpSourceAdapterLiveConfig = Required<Pick<HttpSourceAdapterLiveConfig, "method" | "pollInterval" | "retryDelay" | "maxRetries">> &
+type ResolvedHttpSourceAdapterLiveConfig = Required<
+	Pick<
+		HttpSourceAdapterLiveConfig,
+		"method" | "pollInterval" | "retryDelay" | "maxRetries"
+	>
+> &
 	Pick<HttpSourceAdapterLiveConfig, "ssePath" | "websocketUrl">;
 
 export interface ResolvedHttpSourceAdapterConfig
-	extends Omit<HttpSourceAdapterConfig, "requestInit" | "headers" | "queryParams" | "live"> {
+	extends Omit<
+		HttpSourceAdapterConfig,
+		"requestInit" | "headers" | "queryParams" | "live"
+	> {
 	keyField: string;
 	itemPath: string;
 	usePutForUpdate: boolean;
@@ -57,7 +70,10 @@ export interface ResolvedHttpSourceAdapterConfig
 	live: ResolvedHttpSourceAdapterLiveConfig;
 }
 
-const defaultConfig: Omit<ResolvedHttpSourceAdapterConfig, "baseUrl" | "collectionPath"> = {
+const defaultConfig: Omit<
+	ResolvedHttpSourceAdapterConfig,
+	"baseUrl" | "collectionPath"
+> = {
 	keyField: "id",
 	itemPath: "{collection}/{id}",
 	usePutForUpdate: false,
@@ -223,7 +239,9 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 			this._config.eventSourceConstructor ??
 			(typeof EventSource !== "undefined" ? EventSource : undefined);
 		if (!EventSourceConstructor) {
-			this._notifyError(new Error("EventSource is not available in this environment"));
+			this._notifyError(
+				new Error("EventSource is not available in this environment"),
+			);
 			return;
 		}
 
@@ -251,13 +269,17 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 			this._config.webSocketConstructor ??
 			(typeof WebSocket !== "undefined" ? WebSocket : undefined);
 		if (!WebSocketConstructor) {
-			this._notifyError(new Error("WebSocket is not available in this environment"));
+			this._notifyError(
+				new Error("WebSocket is not available in this environment"),
+			);
 			return;
 		}
 
 		const url = this._config.live.websocketUrl;
 		if (!url) {
-			this._notifyError(new Error("websocketUrl is required for websocket live transport"));
+			this._notifyError(
+				new Error("websocketUrl is required for websocket live transport"),
+			);
 			return;
 		}
 
@@ -306,7 +328,9 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 		const init = this._buildRequestInit("list", undefined, undefined, query);
 		const response = await this._sendFetch(url, init);
 		if (!response.ok) {
-			throw new Error(`Failed to fetch documents: ${response.status} ${response.statusText}`);
+			throw new Error(
+				`Failed to fetch documents: ${response.status} ${response.statusText}`,
+			);
 		}
 		return await response.json();
 	}
@@ -320,7 +344,9 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 		const init = this._buildRequestInit(op, payload, id);
 		const response = await this._sendFetch(url, init);
 		if (!response.ok) {
-			throw new Error(`HTTP ${op} request failed: ${response.status} ${response.statusText}`);
+			throw new Error(
+				`HTTP ${op} request failed: ${response.status} ${response.statusText}`,
+			);
 		}
 	}
 
@@ -360,7 +386,10 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 		}
 	}
 
-	private async _sendFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+	private async _sendFetch(
+		input: RequestInfo | URL,
+		init?: RequestInit,
+	): Promise<Response> {
 		if (this._config.fetcher) {
 			return await this._config.fetcher(input, init);
 		}
@@ -374,7 +403,9 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 	): string {
 		const base = this._config.baseUrl.replace(/\/+$/, "");
 		const collection = this._config.collectionPath.replace(/^\/+|\/+$/g, "");
-		const itemPath = this._config.itemPath.replace("{collection}", collection).replace("{id}", id ?? "");
+		const itemPath = this._config.itemPath
+			.replace("{collection}", collection)
+			.replace("{id}", id ?? "");
 
 		let path = collection;
 		if (op === "create" || op === "list") {
@@ -392,7 +423,11 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 			return `${url}?${query.toString()}`;
 		}
 
-		if (isLive && this._config.live.method === "sse" && this._config.live.ssePath) {
+		if (
+			isLive &&
+			this._config.live.method === "sse" &&
+			this._config.live.ssePath
+		) {
 			return `${base}/${this._config.live.ssePath.replace(/^\/+/, "")}`;
 		}
 
@@ -420,7 +455,9 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 		this._status = {
 			state,
 			lastSyncAt:
-				state === "idle" || state === "syncing" ? Date.now() : this._status.lastSyncAt,
+				state === "idle" || state === "syncing"
+					? Date.now()
+					: this._status.lastSyncAt,
 			error,
 		};
 	}

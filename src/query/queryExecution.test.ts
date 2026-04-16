@@ -38,6 +38,10 @@ test("QueryExecutionPort: default executor returns all docs for empty CTE", (t) 
 		{ id: "2", name: "Soup", status: "archived" },
 	];
 
-	t.deepEqual(port.execute(cte, docs), docs, "Should return original docs when no filters are defined");
+	t.deepEqual(
+		port.execute(cte, docs),
+		docs,
+		"Should return original docs when no filters are defined",
+	);
 	t.end();
 });

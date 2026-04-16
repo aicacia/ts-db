@@ -22,7 +22,10 @@ test("QueryBuilder: pure builder compileToFunction works", (t) => {
 	const results = fn(docs);
 
 	t.equal(results.length, 1, "Should filter active documents");
-	t.ok(results.every((doc) => doc.status === "active"), "Should return only active documents");
+	t.ok(
+		results.every((doc) => doc.status === "active"),
+		"Should return only active documents",
+	);
 	t.end();
 });
 
@@ -30,7 +33,11 @@ test("QueryBuilder: pure builder subscribe throws", (t) => {
 	const query = new QueryBuilder<Recipe>().where(equal("status", "active"));
 
 	t.throws(
-		() => query.subscribe(() => {}, () => {}),
+		() =>
+			query.subscribe(
+				() => {},
+				() => {},
+			),
 		/QueryBuilder.subscribe requires a runtime query compiler/,
 		"subscribe should throw the expected pure builder error",
 	);
@@ -51,8 +58,16 @@ test("QueryBuilder: compileToFunction snapshots the query state", (t) => {
 
 	const results = fn(docs);
 
-	t.equal(results.length, 1, "Compiled function should preserve original snapshot filters");
-	t.equal(results[0].status, "active", "Compiled function should not be affected by later builder changes");
+	t.equal(
+		results.length,
+		1,
+		"Compiled function should preserve original snapshot filters",
+	);
+	t.equal(
+		results[0].status,
+		"active",
+		"Compiled function should not be affected by later builder changes",
+	);
 	t.end();
 });
 
@@ -62,7 +77,10 @@ test("QueryBuilder: toCTE returns a snapshot copy", (t) => {
 
 	query.orderBy("name");
 
-	t.notOk(cte.orderBy, "Snapshot CTE should not reflect later builder modifications");
+	t.notOk(
+		cte.orderBy,
+		"Snapshot CTE should not reflect later builder modifications",
+	);
 	t.end();
 });
 
