@@ -1,4 +1,4 @@
-import type { CTEOrderBy } from "../cte.js";
+import type { CTEOrderBy } from "../query/cte.js";
 import { getFieldValue } from "./field.js";
 
 /** Compare two values for sorting.

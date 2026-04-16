@@ -12,7 +12,7 @@ import {
 	includes,
 	lessThan,
 	or,
-} from "./cte.js";
+} from "./query/cte.js";
 
 interface Recipe {
 	id: string;

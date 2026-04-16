@@ -4,7 +4,7 @@ export type {
 	FieldPath,
 	SourceAdapter,
 	UnsubscribeFn,
-} from "./types.js";
+} from "./types/index.js";
 
 // Collection types and API
 export type { CollectionConfig, ICollection } from "./collection/index.js";
@@ -27,7 +27,7 @@ export type {
 } from "./adapters/index.js";
 
 // Utilities
-export { getFieldValue } from "./utils.js";
+export { getFieldValue } from "./utils/index.js";
 
 // Test utilities
 export {

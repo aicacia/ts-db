@@ -1,4 +1,4 @@
-import type { FieldPath, UnsubscribeFn } from "../types.js";
+import type { FieldPath, UnsubscribeFn } from "../types/index.js";
 import type { ICollection } from "../collection/index.js";
 
 import {
@@ -22,7 +22,7 @@ import {
 	or,
 } from "./cte.js";
 import { applyCTE } from "./filterEngine.js";
-import { getFieldValue } from "../utils.js";
+import { getFieldValue } from "../utils/index.js";
 
 function assertNever(value: never): never {
 	throw new Error(`Unexpected value: ${String(value)}`);

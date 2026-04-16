@@ -1,4 +1,4 @@
-import type { FieldPath } from "../types.js";
+import type { FieldPath } from "../types/index.js";
 
 /** Get nested field value from document using dot notation. */
 export function getFieldValue<T>(doc: T, field: FieldPath<T>): unknown {

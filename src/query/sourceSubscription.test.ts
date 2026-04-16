@@ -1,6 +1,6 @@
 import test from "tape";
 import { createSourceSubscription } from "./sourceSubscription.js";
-import type { SourceAdapter } from "../types.js";
+import type { SourceAdapter } from "../types/index.js";
 
 interface Recipe {
 	id: string;

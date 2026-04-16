@@ -1,5 +1,5 @@
-import type { UnsubscribeFn } from "../types.js";
-import { toError } from "../utils.js";
+import type { UnsubscribeFn } from "../types/index.js";
+import { toError } from "../utils/index.js";
 
 export interface SubscriptionAdapter<T> {
 	subscribe(

@@ -1,6 +1,6 @@
 import { fuzzyEquals } from "@aicacia/string-fuzzy_equals";
 import type { CTE, CTEFilter, CTEOrderBy } from "./cte.js";
-import { createItemSortFunction, getFieldValue } from "../utils.js";
+import { createItemSortFunction, getFieldValue } from "../utils/index.js";
 
 function toSearchString(value: unknown): string {
 	if (value === null || value === undefined) {

@@ -1,6 +1,6 @@
-import type { SourceAdapter, UnsubscribeFn } from "../types.js";
+import type { SourceAdapter, UnsubscribeFn } from "../types/index.js";
 import type { SnapshotSubscriptionAdapter } from "./subscriptionManager.js";
-import { safeInvoke, toError } from "../utils.js";
+import { safeInvoke, toError } from "../utils/index.js";
 
 interface SourceQueryEntry<T> {
 	sourceUnsubscribe: UnsubscribeFn;

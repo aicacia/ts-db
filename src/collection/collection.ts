@@ -3,8 +3,8 @@ import type {
 	SourceAdapter,
 	UnsubscribeFn,
 	FieldPath,
-} from "../types.js";
-import type { CTE } from "../cte.js";
+} from "../types/index.js";
+import type { CTE } from "../query/cte.js";
 import type { IQueryBuilder } from "../query/queryBuilder.js";
 import {
 	createQuerySubscriptionService,

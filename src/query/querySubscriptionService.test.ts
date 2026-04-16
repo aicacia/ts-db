@@ -2,7 +2,7 @@ import test from "tape";
 import { createQuerySubscriptionService } from "./querySubscriptionService.js";
 import { equal } from "./cte.js";
 import type { CTE } from "./cte.js";
-import type { SourceAdapter } from "../types.js";
+import type { SourceAdapter } from "../types/index.js";
 
 interface Recipe {
 	id: string;

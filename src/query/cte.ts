@@ -1,4 +1,4 @@
-import type { FieldPath } from "../types.js";
+import type { FieldPath } from "../types/index.js";
 
 export interface CTE<T> {
 	version: "1.0";
