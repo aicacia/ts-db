@@ -4,26 +4,18 @@ import type {
 	UnsubscribeFn,
 	FieldPath,
 } from "../types/index.js";
-import type { CTE } from "../query/cte.js";
 import type { IQueryBuilder } from "../query/queryBuilder.js";
 import {
 	createQueryService,
 	type QueryService,
 	type QuerySubscriptionService,
 } from "../query/querySubscriptionService.js";
-import type { QueryExecutionPort } from "../query/querySubscriptionService.js";
-import type { SubscriptionManager } from "../query/subscriptionManager.js";
-import type { SourceSubscription } from "../query/sourceSubscription.js";
 
 export interface CollectionConfig<T> {
 	id: string;
 	source: SourceAdapter<T>;
 	keyOf: (doc: T) => string;
 	keyField?: FieldPath<T>;
-	subscriptionManager?: SubscriptionManager<T>;
-	sourceSubscription?: SourceSubscription<T>;
-	queryExecutor?: QueryExecutionPort<T>;
-	keySerializer?: (cte: CTE<T>) => string;
 	queryService?: QueryService<T>;
 	querySubscriptionService?: QuerySubscriptionService<T>;
 }
@@ -69,10 +61,6 @@ export class Collection<T> implements ICollection<T> {
 			injectedQueryService ??
 			createQueryService({
 				source: this._source,
-				sourceSubscription: config.sourceSubscription,
-				subscriptionManager: config.subscriptionManager,
-				queryExecutor: config.queryExecutor,
-				keySerializer: config.keySerializer,
 			});
 	}
 

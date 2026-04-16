@@ -1,6 +1,6 @@
 import test from "tape";
 import { createCollection } from "./index.js";
-import { createQueryBuilder } from "../query/index.js";
+import { createQueryBuilder, createQueryService } from "../query/index.js";
 import { MemoryAdapter } from "../adapters/index.js";
 import type { SourceAdapter } from "../types/index.js";
 import type {
@@ -216,16 +216,16 @@ test("Collection: query() delegates builder creation to injected QuerySubscripti
 	t.end();
 });
 
-test("Collection: allows injected QueryExecutionPort", (t) => {
+test("Collection: allows injected QueryService with custom QueryExecutionPort", (t) => {
 	const source: SourceAdapter<Recipe> = {
 		subscribe(onUpdate) {
 			onUpdate([
-				{ id: "1", name: "Pasta", status: "active" },
-				{ id: "2", name: "Soup", status: "archived" },
-			]);
-			return () => {
-				/* noop */
-			};
+			{ id: "1", name: "Pasta", status: "active" },
+			{ id: "2", name: "Soup", status: "archived" },
+		]);
+		return () => {
+			/* noop */
+		};
 		},
 		async create() {},
 		async update() {},
@@ -239,11 +239,14 @@ test("Collection: allows injected QueryExecutionPort", (t) => {
 		id: "recipes",
 		source,
 		keyOf: (doc) => doc.id,
-		queryExecutor: {
-			execute(cte, docs) {
-				return docs.filter((doc) => doc.status === "active");
+		queryService: createQueryService({
+			source,
+			queryExecutor: {
+				execute(cte, docs) {
+					return docs.filter((doc) => doc.status === "active");
+				},
 			},
-		},
+		}),
 	});
 
 	const updates: Recipe[][] = [];
