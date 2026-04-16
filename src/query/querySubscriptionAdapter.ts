@@ -1,6 +1,6 @@
 import type { SubscriptionAdapter } from "./subscriptionManager.js";
 import type { QueryExecutionPort } from "./queryExecution.js";
-import type { CTE } from "../cte.js";
+import type { CTE } from "./cte.js";
 import { safeInvoke, toError } from "../utils.js";
 
 export const createQuerySubscriptionAdapter = <T>(

@@ -1,6 +1,6 @@
 import test from "tape";
 import { QueryBuilder, createQueryBuilder } from "./queryBuilder.js";
-import { equal } from "../cte.js";
+import { equal } from "./cte.js";
 
 interface Recipe {
 	id: string;

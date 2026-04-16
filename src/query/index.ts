@@ -1,0 +1,47 @@
+export { QueryBuilder, createQueryBuilder } from "./queryBuilder.js";
+export type {
+	IQueryBuilder,
+	OrderDirection,
+	QueryCompiler,
+	QuerySubscriptionResult,
+} from "./queryBuilder.js";
+
+export type { QueryExecutionPort } from "./queryExecution.js";
+export type {
+	QuerySubscriptionServiceConfig,
+	QuerySubscriptionService,
+} from "./querySubscriptionService.js";
+export { createQuerySubscriptionService } from "./querySubscriptionService.js";
+
+export type { SourceSubscription } from "./sourceSubscription.js";
+export { createSourceSubscription } from "./sourceSubscription.js";
+
+export type {
+	SubscriptionAdapter,
+	SubscriptionAdapterFactory,
+} from "./subscriptionManager.js";
+export { SubscriptionManager, createSubscriptionManager } from "./subscriptionManager.js";
+
+export type { CTE, CTEFilter, CTEOrderBy } from "./cte.js";
+export {
+	and,
+	compare,
+	contains,
+	containsIgnoreCase,
+	createCTE,
+	equal,
+	fuzzyContains,
+	getCTEIdentity,
+	greaterThan,
+	greaterThanOrEqual,
+	inCTE,
+	inOperator,
+	includes,
+	lessThan,
+	lessThanOrEqual,
+	notEqual,
+	notInCTE,
+	or,
+} from "./cte.js";
+
+export { applyCTE, applyFilter, applyOrderBy, applyPagination } from "./filterEngine.js";

@@ -1,6 +1,6 @@
 import test from "tape";
 import { createQuerySubscriptionAdapter } from "./querySubscriptionAdapter.js";
-import type { CTE } from "../cte.js";
+import type { CTE } from "./cte.js";
 import type { SourceSubscription } from "./sourceSubscription.js";
 import type { QueryExecutionPort } from "./queryExecution.js";
 

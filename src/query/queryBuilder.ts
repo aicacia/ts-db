@@ -20,8 +20,8 @@ import {
 	lessThanOrEqual,
 	notEqual,
 	or,
-} from "../cte.js";
-import { applyCTE } from "../filterEngine.js";
+} from "./cte.js";
+import { applyCTE } from "./filterEngine.js";
 import { getFieldValue } from "../utils.js";
 
 function assertNever(value: never): never {
