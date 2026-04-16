@@ -21,6 +21,7 @@ import {
 	or as createOrFilter,
 } from "./cte.js";
 import { applyCTE } from "./filterEngine.js";
+import { getFieldValue } from "./utils.js";
 
 function assertNever(value: never): never {
 	throw new Error(`Unexpected value: ${String(value)}`);
@@ -82,6 +83,7 @@ function cloneCTE<T>(cte: CTE<T>): CTE<T> {
 		orderBy: cte.orderBy ? [...cte.orderBy] : undefined,
 		limit: cte.limit,
 		offset: cte.offset,
+		joins: cte.joins ? cte.joins.map((join) => ({ ...join })) : undefined,
 		ctes: cte.ctes
 			? Object.fromEntries(
 				Object.entries(cte.ctes).map(([key, childCTE]) => [key, cloneCTE(childCTE)]),
@@ -90,14 +92,28 @@ function cloneCTE<T>(cte: CTE<T>): CTE<T> {
 	};
 }
 
+function getFieldValueByPath(doc: unknown, field: string): unknown {
+	const parts = field.split(".");
+	let value: unknown = doc;
+
+	for (const part of parts) {
+		if (value === null || value === undefined || typeof value !== "object") {
+			return undefined;
+		}
+		value = (value as Record<string, unknown>)[part];
+	}
+
+	return value;
+}
+
 function computeJoinIndex(
 	rightDocs: unknown[],
-	rightKey: (doc: unknown) => unknown,
+	rightField: string,
 ): Map<string, unknown[]> {
 	const index = new Map<string, unknown[]>();
 
 	for (const doc of rightDocs) {
-		const rawKey = rightKey(doc);
+		const rawKey = getFieldValueByPath(doc, rightField);
 		const key = rawKey === null || rawKey === undefined ? "" : String(rawKey);
 		const bucket = index.get(key) ?? [];
 		bucket.push(doc);
@@ -112,7 +128,7 @@ function buildJoinIndexes<T>(
 	rightDocs: unknown[][],
 ) {
 	return joins.map((join, index) =>
-		computeJoinIndex(rightDocs[index] ?? [], join.rightKey),
+		computeJoinIndex(rightDocs[index] ?? [], join.rightField),
 	);
 }
 
@@ -120,22 +136,34 @@ function applyJoins<T>(
 	docs: T[],
 	joins: JoinConfig<T>[],
 	rightDocs: unknown[][],
-): T[] {
+): Array<T & Record<string, unknown[]>> {
 	const indexes = buildJoinIndexes(joins, rightDocs);
 
-	return docs.filter((doc) => {
-		for (const [index, join] of joins.entries()) {
-			const leftKey = join.leftKey(doc);
-			const lookupKey = leftKey === null || leftKey === undefined ? "" : String(leftKey);
-			const matches = indexes[index]?.get(lookupKey) ?? [];
+	return docs
+		.map((doc) => {
+			let result: T & Record<string, unknown[]> = { ...doc };
 
-			if (join.type === "inner" && matches.length === 0) {
-				return false;
+			for (const [index, join] of joins.entries()) {
+				const leftKey = getFieldValue(doc, join.leftField);
+				const lookupKey = leftKey === null || leftKey === undefined ? "" : String(leftKey);
+				const matches = indexes[index]?.get(lookupKey) ?? [];
+
+				result = {
+					...result,
+					[join.collection.id]: matches,
+				};
+
+				if (join.type === "inner" && matches.length === 0) {
+					return null;
+				}
 			}
-		}
-		return true;
-	});
+
+			return result;
+		})
+		.filter((doc): doc is T & Record<string, unknown[]> => doc !== null);
 }
+
+export type JoinResult<Right> = Record<string, Right[]>;
 
 /**
  * Order direction
@@ -146,8 +174,8 @@ export type JoinType = "inner" | "left";
 
 export interface JoinConfig<Left> {
 	collection: ICollection<unknown>;
-	leftKey: (doc: Left) => unknown;
-	rightKey: (doc: unknown) => unknown;
+	leftField: FieldPath<Left>;
+	rightField: FieldPath<unknown>;
 	type: JoinType;
 }
 
@@ -237,15 +265,15 @@ export interface IQueryBuilder<T> {
 	/**
 	 * Join another collection to the root query.
 	 *
-	 * The left-side selector is required and the right-side key selector
-	 * is optional when the joined collection already exposes a key.
+	 * The left-side field is required. The right-side field is optional when
+	 * the joined collection exposes a `keyField`.
 	 */
 	join<Right>(
 		rightCollection: ICollection<Right>,
-		leftKey: (doc: T) => unknown,
-		rightKey?: (doc: Right) => unknown,
+		leftField: FieldPath<T>,
+		rightField?: FieldPath<Right>,
 		type?: JoinType,
-	): IQueryBuilder<T>;
+	): IQueryBuilder<T & JoinResult<Right>>;
 
 	/**
 	 * Order results by field
@@ -432,17 +460,36 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 
 	join<Right>(
 		rightCollection: ICollection<Right>,
-		leftKey: (doc: T) => unknown,
-		rightKey?: (doc: Right) => unknown,
+		leftField: FieldPath<T>,
+		rightField?: FieldPath<Right>,
 		type: JoinType = "inner",
-	): IQueryBuilder<T> {
-		const resolvedRightKey = rightKey ?? rightCollection.getKeyOf();
+	): IQueryBuilder<T & JoinResult<Right>> {
+		const resolvedRightField =
+			rightField ?? rightCollection.getKeyField();
+
+		if (!resolvedRightField) {
+			throw new Error(
+				"join requires a rightField when the joined collection does not expose a key field",
+			);
+		}
+
 		this._joins.push({
 			collection: rightCollection as ICollection<unknown>,
-			leftKey,
-			rightKey: resolvedRightKey as (doc: unknown) => unknown,
+			leftField,
+			rightField: resolvedRightField as FieldPath<unknown>,
 			type,
 		});
+
+		if (!this._cte.joins) {
+			this._cte.joins = [];
+		}
+		this._cte.joins.push({
+			collectionId: rightCollection.id,
+			leftField,
+			rightField: resolvedRightField as FieldPath<unknown>,
+			type,
+		});
+
 		return this;
 	}
 

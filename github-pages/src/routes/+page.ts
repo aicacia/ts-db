@@ -1,6 +1,7 @@
 import type { PageLoad } from './$types';
-import { populateSampleRecipes } from '$lib/sampleRecipes';
+import { populateSampleRecipes, populateSampleComments } from '$lib/sampleRecipes';
 
 export const load: PageLoad = async () => {
-	populateSampleRecipes();
+	await populateSampleRecipes();
+	await populateSampleComments();
 };

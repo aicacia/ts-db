@@ -212,17 +212,19 @@ test("Collection query: join filters by matching root collection to joined colle
 		id: "recipes",
 		source: recipesAdapter,
 		keyOf: (doc) => doc.id,
+		keyField: "id",
 	});
 
 	const items = createCollection({
 		id: "items",
 		source: itemsAdapter,
 		keyOf: (doc) => doc.id,
+		keyField: "id",
 	});
 
 	const results: RecipeWithItem[] = [];
 	const unsub = recipes.query()
-		.join(items, (recipe) => recipe.itemId)
+		.join(items, "itemId")
 		.subscribe(
 			(docs) => results.push(...docs),
 			() => t.fail("unexpected error"),
@@ -269,24 +271,27 @@ test("Collection query: join supports multiple root-level joins", (t) => {
 		id: "recipes",
 		source: recipesAdapter,
 		keyOf: (doc) => doc.id,
+		keyField: "id",
 	});
 
 	const items = createCollection({
 		id: "items",
 		source: itemsAdapter,
 		keyOf: (doc) => doc.id,
+		keyField: "id",
 	});
 
 	const suppliers = createCollection({
 		id: "suppliers",
 		source: suppliersAdapter,
 		keyOf: (doc) => doc.id,
+		keyField: "id",
 	});
 
 	const results: RecipeWithItemSupplier[] = [];
 	const unsub = recipes.query()
-		.join(items, (recipe) => recipe.itemId)
-		.join(suppliers, (recipe) => recipe.supplierId)
+		.join(items, "itemId")
+		.join(suppliers, "supplierId")
 		.subscribe(
 			(docs) => results.push(...docs),
 			() => t.fail("unexpected error"),

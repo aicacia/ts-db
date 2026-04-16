@@ -1,4 +1,5 @@
 import { recipesCollection, type Recipe } from './collections/recipes.js';
+import { commentsCollection, type Comment } from './collections/comments.js';
 
 const sampleRecipes: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt'>[] = [
 	{
@@ -125,14 +126,44 @@ const sampleRecipes: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt'>[] = [
 	}
 ];
 
+const sampleComments: Omit<Comment, 'id' | 'createdAt' | 'updatedAt'>[] = [
+	{
+		recipeId: 'recipe-1',
+		author: 'Ava',
+		text: 'These cookies were perfect and easy to make!',
+	},
+	{
+		recipeId: 'recipe-2',
+		author: 'Leo',
+		text: 'I swapped the pasta for gluten-free and it still worked great.',
+	},
+	{
+		recipeId: 'recipe-2',
+		author: 'Maya',
+		text: 'Fresh basil really makes this recipe pop.',
+	},
+];
+
 export async function populateSampleRecipes(): Promise<void> {
-	for (const sampleRecipe of sampleRecipes) {
+	for (const [index, sampleRecipe] of sampleRecipes.entries()) {
+		const id = `recipe-${index + 1}`;
 		await recipesCollection.create({
 			...sampleRecipe,
-			id: Math.random().toString(36).substring(2),
+			id,
 			createdAt: new Date(),
 			updatedAt: new Date()
 		});
 		await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate async delay
+	}
+}
+
+export async function populateSampleComments(): Promise<void> {
+	for (const sampleComment of sampleComments) {
+		await commentsCollection.create({
+			...sampleComment,
+			id: Math.random().toString(36).substring(2),
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		});
 	}
 }

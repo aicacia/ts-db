@@ -1,4 +1,4 @@
-import type { AdapterStatus, SourceAdapter, UnsubscribeFn } from "./types.js";
+import type { AdapterStatus, SourceAdapter, UnsubscribeFn, FieldPath } from "./types.js";
 import type { CTE } from "./cte.js";
 import type { IQueryBuilder } from "./queryBuilder.js";
 import { createQuerySubscriptionService, type QuerySubscriptionService } from "./querySubscriptionService.js";
@@ -10,6 +10,7 @@ export interface CollectionConfig<T> {
 	id: string;
 	source: SourceAdapter<T>;
 	keyOf: (doc: T) => string;
+	keyField?: FieldPath<T>;
 	subscriptionManager?: SubscriptionManager<T>;
 	sourceSubscription?: SourceSubscription<T>;
 	queryExecutor?: QueryExecutionPort<T>;
@@ -29,6 +30,7 @@ export interface ICollection<T> {
 	): UnsubscribeFn;
 	getStatus(): AdapterStatus;
 	getKeyOf(): (doc: T) => string;
+	getKeyField(): FieldPath<T> | undefined;
 }
 
 /**
@@ -45,11 +47,13 @@ export class Collection<T> implements ICollection<T> {
 	private _source: SourceAdapter<T>;
 	private _querySubscriptionService: QuerySubscriptionService<T>;
 	private _keyOf: (doc: T) => string;
+	private _keyField: FieldPath<T> | undefined;
 
 	constructor(config: CollectionConfig<T>) {
 		this.id = config.id;
 		this._source = config.source;
 		this._keyOf = config.keyOf;
+		this._keyField = config.keyField;
 		this._querySubscriptionService =
 			config.querySubscriptionService ??
 			createQuerySubscriptionService({
@@ -90,6 +94,10 @@ export class Collection<T> implements ICollection<T> {
 
 	getKeyOf(): (doc: T) => string {
 		return this._keyOf;
+	}
+
+	getKeyField(): FieldPath<T> | undefined {
+		return this._keyField;
 	}
 
 }

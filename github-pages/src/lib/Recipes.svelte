@@ -1,19 +1,23 @@
 <script lang="ts">
 	import { recipesCollection } from './collections/recipes.js';
+	import { commentsCollection } from './collections/comments.js';
 	import { collection } from '@aicacia/db/svelte';
 	import RecipeForm from './RecipeForm.svelte';
 	import Modal from './Modal.svelte';
 	import type { Recipe } from './collections/recipes.js';
 
 	let search = $state('');
-	let query = $derived(
-		search
-			? recipesCollection.query().containsIgnoreCase('title', search.trim()).orderBy('updatedAt', 'desc')
-			: recipesCollection.query().orderBy('updatedAt', 'desc')
+	const recipesWithComments = $derived(
+		collection(
+			(search
+				? recipesCollection
+						.query()
+						.containsIgnoreCase('title', search.trim())
+						.orderBy('updatedAt', 'desc')
+				: recipesCollection.query().orderBy('updatedAt', 'desc')
+			).join(commentsCollection, 'id', 'recipeId')
+		)
 	);
-
-	const recipes = $derived(collection(query));
-
 	let showForm = $state(false);
 	let editing: Recipe | null = $state(null);
 
@@ -87,11 +91,10 @@
 		</Modal>
 	{/if}
 
-	<hr class="my-4 border-gray-200" />
 	<div class="flex grow flex-col overflow-auto">
 		<div class="mx-auto max-w-4xl p-4 pb-32">
 			<ul class="overflow-auto">
-				{#each recipes.data as recipe (recipe.id)}
+				{#each recipesWithComments.data as recipe (recipe.id)}
 					<li class="mb-4 rounded bg-white p-4 shadow">
 						<div class="flex items-start justify-between">
 							<div>
@@ -125,6 +128,21 @@
 							{/each}
 						</ol>
 						<hr class="mt-3 border-gray-100" />
+						<div class="mt-3 rounded border border-gray-200 bg-gray-50 p-3">
+							<h3 class="mb-2 text-sm font-semibold text-gray-700">Comments</h3>
+							{#if recipe.comments?.length}
+								<ul class="space-y-2">
+									{#each recipe.comments as comment (comment.id)}
+										<li class="rounded bg-white p-3 shadow-sm">
+											<p class="text-sm font-semibold text-gray-900">{comment.author}</p>
+											<p class="text-sm text-gray-600">{comment.text}</p>
+										</li>
+									{/each}
+								</ul>
+							{:else}
+								<p class="text-sm text-gray-500">No comments yet.</p>
+							{/if}
+						</div>
 					</li>
 				{/each}
 			</ul>

@@ -8,7 +8,15 @@ export interface CTE<T> {
 	orderBy?: CTEOrderBy<T>[];
 	limit?: number;
 	offset?: number;
+	joins?: CTEJoin[];
 	ctes?: Record<string, CTE<T>>;
+}
+
+export interface CTEJoin {
+	collectionId: string;
+	leftField: string;
+	rightField?: string;
+	type: "inner" | "left";
 }
 
 export type CTEFilter<T> =

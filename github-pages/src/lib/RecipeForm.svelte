@@ -31,14 +31,14 @@
 		title = value?.title ?? '';
 		description = value?.description ?? '';
 		ingredients = value?.ingredients
-			? value.ingredients.map((ing) => ({
+			? value.ingredients.map((ing: IngredientLocal) => ({
 					_id: genId(),
 					item: { ...ing.item },
 					quantity: { ...ing.quantity }
 				}))
 			: [];
 		instructions = value?.instructions
-			? value.instructions.map((ins) => ({ _id: genId(), text: ins }))
+			? value.instructions.map((ins: string) => ({ _id: genId(), text: ins }))
 			: [];
 	});
 
