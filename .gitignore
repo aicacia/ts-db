@@ -9,3 +9,4 @@ browser/
 esm/
 .nyc_output/
 npm-debug.log
+tsconfig.tsbuildinfo
