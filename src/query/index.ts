@@ -15,14 +15,6 @@ export type {
 } from "./querySubscriptionService.js";
 export { createQueryService, createQuerySubscriptionService } from "./querySubscriptionService.js";
 
-export type { SourceSubscription } from "./sourceSubscription.js";
-export { createSourceSubscription } from "./sourceSubscription.js";
-
-export type {
-	SubscriptionAdapter,
-	SubscriptionAdapterFactory,
-} from "./subscriptionManager.js";
-export { SubscriptionManager, createSubscriptionManager } from "./subscriptionManager.js";
 
 export type { CTE, CTEFilter, CTEOrderBy } from "./cte.js";
 export {
