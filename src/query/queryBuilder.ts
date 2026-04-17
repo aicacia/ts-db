@@ -375,21 +375,15 @@ export type QuerySubscriptionResult<T> = (
  * QueryBuilder - fluent API for building JSON-serializable CTEs that can be compiled
  */
 export class QueryBuilder<T> implements IQueryBuilder<T> {
-	private _cte: CTE<T>;
-	private _compile: QueryCompiler<T>;
-	private _joins: JoinConfig<T>[] = [];
+	protected _cte: CTE<T>;
+	protected _joins: JoinConfig<T>[] = [];
 
-	constructor(compile?: QueryCompiler<T>) {
+	constructor() {
 		this._cte = createCTE();
-		this._compile =
-			compile ??
-			((cte) => {
-				return () => {
-					throw new Error(
-						"QueryBuilder.subscribe requires a runtime query compiler",
-					);
-				};
-			});
+	}
+
+	protected createSubBuilder(): QueryBuilder<T> {
+		return new QueryBuilder<T>();
 	}
 
 	where(filter: CTEFilter<T>): IQueryBuilder<T> {
@@ -537,7 +531,7 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 		name: string,
 		fn: (q: IQueryBuilder<T>) => IQueryBuilder<T>,
 	): IQueryBuilder<T> {
-		const subqueryBuilder = fn(new QueryBuilder(this._compile));
+		const subqueryBuilder = fn(this.createSubBuilder());
 		const subqueryCTE = subqueryBuilder.toCTE();
 
 		if (!this._cte.ctes) {
@@ -549,6 +543,41 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 	}
 
 	subscribe(
+		onUpdate: (docs: T[]) => void,
+		onError?: (error: Error) => void,
+	): UnsubscribeFn {
+		throw new Error(
+			"QueryBuilder.subscribe requires a runtime query compiler",
+		);
+	}
+
+	toCTE(): CTE<T> {
+		return cloneCTE(this._cte);
+	}
+
+	compileToFunction(): (docs: T[]) => T[] {
+		if (this._joins.length > 0) {
+			throw new Error("compileToFunction does not support joins");
+		}
+
+		const cte = cloneCTE(this._cte);
+		return (docs: T[]) => applyCTE(cte, docs);
+	}
+}
+
+export class RuntimeQueryBuilder<T> extends QueryBuilder<T> {
+	private _compile: QueryCompiler<T>;
+
+	constructor(compile: QueryCompiler<T>) {
+		super();
+		this._compile = compile;
+	}
+
+	protected override createSubBuilder(): QueryBuilder<T> {
+		return new RuntimeQueryBuilder<T>(this._compile);
+	}
+
+	override subscribe(
 		onUpdate: (docs: T[]) => void,
 		onError?: (error: Error) => void,
 	): UnsubscribeFn {
@@ -596,23 +625,12 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 			}
 		};
 	}
-
-	toCTE(): CTE<T> {
-		return cloneCTE(this._cte);
-	}
-
-	compileToFunction(): (docs: T[]) => T[] {
-		if (this._joins.length > 0) {
-			throw new Error("compileToFunction does not support joins");
-		}
-
-		const cte = cloneCTE(this._cte);
-		return (docs: T[]) => applyCTE(cte, docs);
-	}
 }
 
 export function createQueryBuilder<T>(
 	compile?: QueryCompiler<T>,
 ): QueryBuilder<T> {
-	return new QueryBuilder<T>(compile);
+	return compile
+		? new RuntimeQueryBuilder<T>(compile)
+		: new QueryBuilder<T>();
 }
