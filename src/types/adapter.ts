@@ -6,12 +6,12 @@ export interface AdapterStatus {
 }
 
 /** Persistence adapter for multi-document collections. */
-export interface SourceAdapter<T> {
+export interface SourceAdapter<T, Q = unknown> {
 	/** Subscribe to raw document updates and return an unsubscribe function. */
 	subscribe(
 		onUpdate: (docs: T[]) => void,
 		onError: (error: Error) => void,
-		query?: unknown,
+		query?: Q,
 	): UnsubscribeFn;
 
 	/** Create a document. */

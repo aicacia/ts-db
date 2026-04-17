@@ -5,7 +5,7 @@ import { safeInvoke, toError } from "../utils/index.js";
 
 export const createQuerySubscriptionAdapter = <T>(
 	cte: CTE<T>,
-	sourceAdapter: SubscriptionAdapter<T>,
+	sourceAdapter: SubscriptionAdapter<T, CTE<T>>,
 	queryExecutor: QueryExecutionPort<T>,
 ): SubscriptionAdapter<T> => {
 	return {

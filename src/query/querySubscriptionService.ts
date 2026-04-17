@@ -22,8 +22,8 @@ import { createQuerySubscriptionAdapter } from "./querySubscriptionAdapter.js";
 export type { QueryExecutionPort } from "./queryExecution.js";
 
 export interface QuerySubscriptionServiceConfig<T> {
-	source?: SourceAdapter<T>;
-	sourceSubscription?: SubscriptionAdapter<T>;
+	source?: SourceAdapter<T, CTE<T>>;
+	sourceSubscription?: SubscriptionAdapter<T, CTE<T>>;
 	subscriptionManager?: SubscriptionManager<T>;
 	queryExecutor?: QueryExecutionPort<T>;
 	keySerializer?: (cte: CTE<T>) => string;
@@ -51,7 +51,7 @@ export function createQuerySubscriptionService<T>(
 		);
 	}
 
-	let sourceSubscription: SubscriptionAdapter<T>;
+	let sourceSubscription: SubscriptionAdapter<T, CTE<T>>;
 	if (config.sourceSubscription) {
 		sourceSubscription = config.sourceSubscription;
 	} else if (config.source) {

@@ -12,9 +12,10 @@ interface SourceQueryEntry<T> {
 	hasSnapshot: boolean;
 }
 
-export interface SourceSubscription<T> extends SnapshotSubscriptionAdapter<T> {}
+export interface SourceSubscription<T, Q = unknown>
+	extends SnapshotSubscriptionAdapter<T, Q> {}
 
-function createQueryKey(query?: unknown): string {
+function createQueryKey<Q>(query?: Q): string {
 	if (query === undefined) {
 		return "__default__";
 	}
@@ -26,9 +27,9 @@ function createQueryKey(query?: unknown): string {
 	}
 }
 
-export function createSourceSubscription<T>(
-	source: SourceAdapter<T>,
-): SourceSubscription<T> {
+export function createSourceSubscription<T, Q = unknown>(
+	source: SourceAdapter<T, Q>,
+): SourceSubscription<T, Q> {
 	const entries = new Map<string, SourceQueryEntry<T>>();
 
 	function notifyListeners(entry: SourceQueryEntry<T>, docs: T[]): void {
@@ -45,7 +46,7 @@ export function createSourceSubscription<T>(
 		}
 	}
 
-	function ensureSourceSubscription(query?: unknown): SourceQueryEntry<T> {
+	function ensureSourceSubscription(query?: Q): SourceQueryEntry<T> {
 		const key = createQueryKey(query);
 		let entry = entries.get(key);
 		if (entry) {
@@ -78,7 +79,7 @@ export function createSourceSubscription<T>(
 	}
 
 	return {
-		subscribe(onUpdate, onError, query?: unknown) {
+		subscribe(onUpdate, onError, query?: Q) {
 			const entry = ensureSourceSubscription(query);
 			let receivedSnapshot = false;
 
@@ -115,7 +116,7 @@ export function createSourceSubscription<T>(
 			};
 		},
 
-		getSnapshot(query?: unknown) {
+		getSnapshot(query?: Q) {
 			const entry = entries.get(createQueryKey(query));
 			return entry ? [...entry.currentDocs] : [];
 		},

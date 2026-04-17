@@ -1,16 +1,16 @@
 import type { UnsubscribeFn } from "../types/index.js";
 import { toError } from "../utils/index.js";
 
-export interface SubscriptionAdapter<T> {
+export interface SubscriptionAdapter<T, Q = unknown> {
 	subscribe(
 		onUpdate: (rows: T[]) => void,
 		onError: (err: Error) => void,
-		query?: unknown,
+		query?: Q,
 	): UnsubscribeFn;
-	getSnapshot?: (query?: unknown) => T[];
+	getSnapshot?: (query?: Q) => T[];
 }
 
-export type SnapshotSubscriptionAdapter<T> = SubscriptionAdapter<T> & {
+export type SnapshotSubscriptionAdapter<T, Q = unknown> = SubscriptionAdapter<T, Q> & {
 	getSnapshot(): T[];
 };
 
