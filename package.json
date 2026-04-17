@@ -46,7 +46,7 @@
 		"bench": "pnpm run -s tape:runner -- src/**/*.benchmark.{ts,tsx} | pnpm exec tap-spec",
 		"coverage": "c8 --check-coverage --lines 75 --reporter=lcov --reporter=text pnpm run -s tape:runner -- src/**/*.test.{ts,tsx} | pnpm exec tap-spec",
 		"coverageHTML": "c8 --check-coverage --lines 75 --reporter=lcov --reporter=html pnpm run -s tape:runner -- src/**/*.test.{ts,tsx} | pnpm exec tap-spec",
-		"clean": "rm -rf esm cjs browser types .nyc_output coverage",
+		"clean": "rm -rf esm cjs browser types .nyc_output coverage tsconfig.tsbuildinfo tsconfig.cjs.tsbuildinfo",
 		"lint": "biome lint ./src",
 		"format": "biome format --write .",
 		"format:check": "biome format .",
