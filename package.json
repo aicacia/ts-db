@@ -17,8 +17,8 @@
 			"require": "./cjs/index.js"
 		},
 		"./svelte": {
-			"svelte": "./src/svelte/index.ts",
-			"types": "./types/svelte.svelte.d.ts",
+			"svelte": "./src/svelte/index.svelte.ts",
+			"types": "./types/svelte/index.d.ts",
 			"import": "./esm/svelte/index.js",
 			"require": "./cjs/svelte/index.js"
 		},

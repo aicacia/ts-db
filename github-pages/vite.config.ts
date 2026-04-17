@@ -9,7 +9,7 @@ const libraryRoot = new URL('..', import.meta.url).pathname;
 const alias = [
 	{
 		find: /^@aicacia\/db\/svelte$/,
-		replacement: path.resolve(libraryRoot, 'src/svelte/index.ts')
+		replacement: path.resolve(libraryRoot, 'src/svelte/index.svelte.ts')
 	},
 	{ find: /^@aicacia\/db$/, replacement: path.resolve(libraryRoot, 'src/index.ts') }
 ];
