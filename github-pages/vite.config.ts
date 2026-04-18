@@ -14,8 +14,6 @@ const alias = [
 	{ find: /^@aicacia\/db$/, replacement: path.resolve(libraryRoot, 'src/index.ts') }
 ];
 
-console.log('vite alias config', alias);
-
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
 	resolve: {

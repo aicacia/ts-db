@@ -4,11 +4,13 @@
 		"ignoreUnknown": true,
 		"ignore": [
 			"browser/**/*",
-			"esm/**/*",
-			"types/**/*",
-			"github-pages/**/*",
 			"coverage/**/*",
-			".nyc_output/**/*"
+			".nyc_output/**/*",
+			"docs/**/*",
+			"esm/**/*",
+			"github-pages/**/*",
+			"node_modules/**/*",
+			"types/**/*"
 		]
 	}
 }
