@@ -64,8 +64,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout --orphan npm
-          git rm -rf .
+          git rm -rf . || true
+          git clean -fdx || true
           cp -a out/. .
+          rm -rf out
           git add -A
           git commit -m "ci: update npm branch from $GITHUB_SHA"
           git push --force origin npm
