@@ -42,8 +42,8 @@ jobs:
 
       - name: Create package tarball (npm pack)
         run: |
-          TGZ=$(npm pack)
-          echo "TGZ=$TGZ" >> $GITHUB_ENV
+          TGZ=$(npm pack | tail -n 1)
+          printf '%s\n' "TGZ=$TGZ" >> $GITHUB_ENV
 
       - name: Extract package contents
         run: |
