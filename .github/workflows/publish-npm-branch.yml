@@ -65,9 +65,13 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout --orphan npm
           git rm -rf . || true
-          git clean -fdx || true
-          cp -a out/. .
+          tmp="$RUNNER_TEMP/out-pack-$$"
+          mkdir -p "$tmp"
+          cp -a out/. "$tmp"/
           rm -rf out
+          git clean -fdx || true
+          cp -a "$tmp"/. .
+          rm -rf "$tmp"
           git add -A
           git commit -m "ci: update npm branch from $GITHUB_SHA"
           git push --force origin npm
