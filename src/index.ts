@@ -18,7 +18,11 @@ export { Singleton, createSingleton } from "./singleton/index.js";
 export * from "./query/index.js";
 
 // Adapters
-export { MemoryAdapter, MemorySingletonAdapter, HttpSourceAdapter } from "./adapters/index.js";
+export {
+	MemoryAdapter,
+	MemorySingletonAdapter,
+	HttpSourceAdapter,
+} from "./adapters/index.js";
 export type {
 	HttpSourceAdapterConfig,
 	HttpSourceAdapterLiveConfig,

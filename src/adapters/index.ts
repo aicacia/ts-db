@@ -1,4 +1,9 @@
-export type { AdapterStatus, SourceAdapter, SingletonSourceAdapter, UnsubscribeFn } from "../types/index.js";
+export type {
+	AdapterStatus,
+	SourceAdapter,
+	SingletonSourceAdapter,
+	UnsubscribeFn,
+} from "../types/index.js";
 export { MemoryAdapter, MemorySingletonAdapter } from "./memoryAdapter.js";
 export { HttpSourceAdapter } from "./httpAdapter.js";
 export type {

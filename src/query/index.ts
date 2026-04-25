@@ -13,8 +13,10 @@ export type {
 	QuerySubscriptionServiceConfig,
 	QuerySubscriptionService,
 } from "./querySubscriptionService.js";
-export { createQueryService, createQuerySubscriptionService } from "./querySubscriptionService.js";
-
+export {
+	createQueryService,
+	createQuerySubscriptionService,
+} from "./querySubscriptionService.js";
 
 export type { CTE, CTEFilter, CTEOrderBy } from "./cte.js";
 export {
@@ -38,4 +40,9 @@ export {
 	or,
 } from "./cte.js";
 
-export { applyCTE, applyFilter, applyOrderBy, applyPagination } from "./filterEngine.js";
+export {
+	applyCTE,
+	applyFilter,
+	applyOrderBy,
+	applyPagination,
+} from "./filterEngine.js";

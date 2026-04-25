@@ -6,7 +6,9 @@ export function getFieldValue<T>(doc: T, field: FieldPath<T>): unknown {
 	let value: unknown = doc;
 
 	for (const part of parts) {
-		if (value === null || value === undefined) return undefined;
+		if (value === null || value === undefined || typeof value !== "object") {
+			return undefined;
+		}
 		value = (value as Record<string, unknown>)[part];
 	}
 

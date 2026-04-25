@@ -56,7 +56,8 @@ export class Collection<T> implements ICollection<T> {
 		this._source = config.source;
 		this._keyOf = config.keyOf;
 		this._keyField = config.keyField;
-		const injectedQueryService = config.queryService ?? config.querySubscriptionService;
+		const injectedQueryService =
+			config.queryService ?? config.querySubscriptionService;
 		this._queryService =
 			injectedQueryService ??
 			createQueryService({

@@ -1,5 +1,13 @@
-import type { AdapterStatus, SourceAdapter, UnsubscribeFn } from "../types/index.js";
-import { safeInvoke, toError } from "../utils/index.js";
+import type {
+	AdapterStatus,
+	SourceAdapter,
+	UnsubscribeFn,
+} from "../types/index.js";
+import {
+	notifySubscribers,
+	notifySubscriberErrors,
+} from "../utils/subscriptions.js";
+import { toError } from "../utils/index.js";
 
 export type LiveTransportMethod = "polling" | "sse" | "websocket" | "none";
 
@@ -137,7 +145,7 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 			this._startLiveTransport(query);
 		}
 
-		const error = safeInvoke(onUpdate, this._cachedDocs, onError);
+		const error = notifySubscribers([entry], this._cachedDocs);
 		if (error) {
 			throw error;
 		}
@@ -435,20 +443,16 @@ export class HttpSourceAdapter<T extends Record<string, unknown>>
 	}
 
 	private _notifySubscribers(docs: T[]): void {
-		for (const entry of this._subscriptions) {
-			const error = safeInvoke(entry.onUpdate, docs, entry.onError);
-			if (error) {
-				throw error;
-			}
+		const error = notifySubscribers(this._subscriptions, docs);
+		if (error) {
+			throw error;
 		}
 	}
 
 	private _notifyError(error: unknown): void {
 		const normalized = toError(error);
 		this._updateStatus("error", normalized);
-		for (const entry of this._subscriptions) {
-			safeInvoke(entry.onError, normalized, undefined, true);
-		}
+		notifySubscriberErrors(this._subscriptions, normalized);
 	}
 
 	private _updateStatus(state: AdapterStatus["state"], error?: Error): void {

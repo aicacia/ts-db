@@ -22,150 +22,10 @@ import {
 	or,
 } from "./cte.js";
 import { applyCTE } from "./filterEngine.js";
-import { getFieldValue } from "../utils/index.js";
+import { cloneCTE } from "./utils.js";
+import { applyJoins, type JoinResult } from "./joins.js";
 
-function assertNever(value: never): never {
-	throw new Error(`Unexpected value: ${String(value)}`);
-}
-
-function cloneValue<T>(value: T): T {
-	if (value === null || typeof value !== "object") {
-		return value;
-	}
-
-	if (typeof structuredClone === "function") {
-		return structuredClone(value);
-	}
-
-	if (Array.isArray(value)) {
-		return value.map(cloneValue) as unknown as T;
-	}
-
-	const copied: Record<string, unknown> = {};
-	for (const key of Object.keys(value as Record<string, unknown>)) {
-		copied[key] = cloneValue((value as Record<string, unknown>)[key]);
-	}
-
-	return copied as T;
-}
-
-function cloneFilters<T>(filters: CTEFilter<T>[]): CTEFilter<T>[] {
-	return filters.map((filter) => {
-		if (filter.type === "comparison") {
-			return {
-				...filter,
-				value: cloneValue(filter.value),
-			};
-		}
-
-		if (filter.type === "logical") {
-			return {
-				...filter,
-				filters: cloneFilters(filter.filters),
-			};
-		}
-
-		if (filter.type === "reference") {
-			return {
-				...filter,
-			};
-		}
-
-		return assertNever(filter);
-	});
-}
-
-function cloneCTE<T>(cte: CTE<T>): CTE<T> {
-	return {
-		version: cte.version,
-		name: cte.name,
-		columns: cte.columns ? [...cte.columns] : undefined,
-		filters: cte.filters ? cloneFilters(cte.filters) : undefined,
-		orderBy: cte.orderBy ? [...cte.orderBy] : undefined,
-		limit: cte.limit,
-		offset: cte.offset,
-		joins: cte.joins ? cte.joins.map((join) => ({ ...join })) : undefined,
-		ctes: cte.ctes
-			? Object.fromEntries(
-					Object.entries(cte.ctes).map(([key, childCTE]) => [
-						key,
-						cloneCTE(childCTE),
-					]),
-				)
-			: undefined,
-	};
-}
-
-function getFieldValueByPath(doc: unknown, field: string): unknown {
-	const parts = field.split(".");
-	let value: unknown = doc;
-
-	for (const part of parts) {
-		if (value === null || value === undefined || typeof value !== "object") {
-			return undefined;
-		}
-		value = (value as Record<string, unknown>)[part];
-	}
-
-	return value;
-}
-
-function computeJoinIndex(
-	rightDocs: unknown[],
-	rightField: string,
-): Map<string, unknown[]> {
-	const index = new Map<string, unknown[]>();
-
-	for (const doc of rightDocs) {
-		const rawKey = getFieldValueByPath(doc, rightField);
-		const key = rawKey === null || rawKey === undefined ? "" : String(rawKey);
-		const bucket = index.get(key) ?? [];
-		bucket.push(doc);
-		index.set(key, bucket);
-	}
-
-	return index;
-}
-
-function buildJoinIndexes<T>(joins: JoinConfig<T>[], rightDocs: unknown[][]) {
-	return joins.map((join, index) =>
-		computeJoinIndex(rightDocs[index] ?? [], join.rightField),
-	);
-}
-
-function applyJoins<T>(
-	docs: T[],
-	joins: JoinConfig<T>[],
-	rightDocs: unknown[][],
-): Array<T & Record<string, unknown[]>> {
-	const indexes = buildJoinIndexes(joins, rightDocs);
-
-	return docs
-		.map((doc) => {
-			let result = { ...doc } as T & Record<string, unknown[]>;
-
-			for (const [index, join] of joins.entries()) {
-				const leftKey = getFieldValue(doc, join.leftField);
-				const lookupKey =
-					leftKey === null || leftKey === undefined ? "" : String(leftKey);
-				const matches = indexes[index]?.get(lookupKey) ?? [];
-
-				result = {
-					...result,
-					[join.collection.id]: matches,
-				};
-
-				if (join.type === "inner" && matches.length === 0) {
-					return null;
-				}
-			}
-
-			return result;
-		})
-		.filter((doc): doc is T & Record<string, unknown[]> => doc !== null);
-}
-
-export type JoinResult<Right> = Record<string, Right[]>;
+// join helpers extracted to ./joins.ts
 
 /**
  * Order direction
@@ -546,9 +406,7 @@ export class QueryBuilder<T> implements IQueryBuilder<T> {
 		onUpdate: (docs: T[]) => void,
 		onError?: (error: Error) => void,
 	): UnsubscribeFn {
-		throw new Error(
-			"QueryBuilder.subscribe requires a runtime query compiler",
-		);
+		throw new Error("QueryBuilder.subscribe requires a runtime query compiler");
 	}
 
 	toCTE(): CTE<T> {
@@ -630,7 +488,5 @@ export class RuntimeQueryBuilder<T> extends QueryBuilder<T> {
 export function createQueryBuilder<T>(
 	compile?: QueryCompiler<T>,
 ): QueryBuilder<T> {
-	return compile
-		? new RuntimeQueryBuilder<T>(compile)
-		: new QueryBuilder<T>();
+	return compile ? new RuntimeQueryBuilder<T>(compile) : new QueryBuilder<T>();
 }

@@ -10,7 +10,10 @@ export interface SubscriptionAdapter<T, Q = unknown> {
 	getSnapshot?: (query?: Q) => T[];
 }
 
-export type SnapshotSubscriptionAdapter<T, Q = unknown> = SubscriptionAdapter<T, Q> & {
+export type SnapshotSubscriptionAdapter<T, Q = unknown> = SubscriptionAdapter<
+	T,
+	Q
+> & {
 	getSnapshot(): T[];
 };
 

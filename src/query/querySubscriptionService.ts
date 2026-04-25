@@ -75,7 +75,11 @@ class QuerySubscriptionServiceImpl<T> implements QuerySubscriptionService<T> {
 		const subscriptionKey = this.serializeKey(cte);
 
 		const adapterFactory = (): SubscriptionAdapter<T> =>
-			createQuerySubscriptionAdapter(cte, this.sourceSubscription, this.queryExecutor);
+			createQuerySubscriptionAdapter(
+				cte,
+				this.sourceSubscription,
+				this.queryExecutor,
+			);
 
 		return (callbacks) => {
 			return this.subscriptionManager.subscribe({

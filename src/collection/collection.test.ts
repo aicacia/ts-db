@@ -220,12 +220,12 @@ test("Collection: allows injected QueryService with custom QueryExecutionPort", 
 	const source: SourceAdapter<Recipe> = {
 		subscribe(onUpdate) {
 			onUpdate([
-			{ id: "1", name: "Pasta", status: "active" },
-			{ id: "2", name: "Soup", status: "archived" },
-		]);
-		return () => {
-			/* noop */
-		};
+				{ id: "1", name: "Pasta", status: "active" },
+				{ id: "2", name: "Soup", status: "archived" },
+			]);
+			return () => {
+				/* noop */
+			};
 		},
 		async create() {},
 		async update() {},

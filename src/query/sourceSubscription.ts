@@ -1,6 +1,10 @@
 import type { SourceAdapter, UnsubscribeFn } from "../types/index.js";
 import type { SnapshotSubscriptionAdapter } from "./subscriptionManager.js";
-import { safeInvoke, toError } from "../utils/index.js";
+import {
+	notifySubscribersSwallow,
+	notifySubscriberErrors,
+} from "../utils/subscriptions.js";
+import { toError } from "../utils/index.js";
 
 interface SourceQueryEntry<T> {
 	sourceUnsubscribe: UnsubscribeFn;
@@ -33,17 +37,11 @@ export function createSourceSubscription<T, Q = unknown>(
 	const entries = new Map<string, SourceQueryEntry<T>>();
 
 	function notifyListeners(entry: SourceQueryEntry<T>, docs: T[]): void {
-		for (const listener of Array.from(entry.listeners)) {
-			safeInvoke(listener.onUpdate, docs, listener.onError, true);
-		}
+		notifySubscribersSwallow(entry.listeners, docs);
 	}
 
 	function notifyError(entry: SourceQueryEntry<T>, error: Error): void {
-		for (const listener of Array.from(entry.listeners)) {
-			if (listener.onError) {
-				safeInvoke(listener.onError, toError(error), undefined, true);
-			}
-		}
+		notifySubscriberErrors(entry.listeners, error);
 	}
 
 	function ensureSourceSubscription(query?: Q): SourceQueryEntry<T> {
