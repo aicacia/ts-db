@@ -1,0 +1,74 @@
+name: Publish npm branch
+
+on:
+  workflow_run:
+    workflows: ["Test"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        run: pnpm run build
+
+      - name: Create package tarball (npm pack)
+        run: |
+          TGZ=$(npm pack)
+          echo "TGZ=$TGZ" >> $GITHUB_ENV
+
+      - name: Extract package contents
+        run: |
+          mkdir -p out
+          tar -xzf "$TGZ" -C out --strip-components=1
+
+      - name: Validate package contents
+        run: |
+          echo "Contents of out/:"
+          ls -la out
+          if [ -z "$(ls -A out 2>/dev/null)" ]; then
+            echo "Package extraction failed: out/ is empty"
+            exit 1
+          fi
+
+      - name: Replace npm branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan npm
+          git rm -rf .
+          cp -a out/. .
+          git add -A
+          git commit -m "ci: update npm branch from $GITHUB_SHA"
+          git push --force origin npm
