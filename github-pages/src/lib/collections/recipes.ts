@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { createCollection, MemoryAdapter } from '@aicacia/db';
+import { createCollection, MemoryCollectionAdapter } from '@aicacia/db';
 
 export const metricUnitSchema = v.picklist(['g', 'kg', 'ml', 'l']);
 
@@ -32,6 +32,6 @@ export type Recipe = v.InferOutput<typeof recipeSchema>;
 
 export const recipesCollection = createCollection({
 	id: 'recipes',
-	source: new MemoryAdapter<Recipe>('id'),
-	keyOf: (doc) => doc.id
+	sourceType: MemoryCollectionAdapter,
+	keyOf: (doc: Recipe) => doc.id
 });

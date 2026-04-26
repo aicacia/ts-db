@@ -1,2 +1,2 @@
-export type { CollectionConfig, ICollection } from "./collection.js";
-export { Collection, createCollection } from "./collection.js";
+export type { CollectionConfig, CollectionInterface } from "./Collection.js";
+export { Collection, createCollection } from "./Collection.js";

@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { createCollection, MemoryAdapter } from '@aicacia/db';
+import { createCollection, MemoryCollectionAdapter } from '@aicacia/db';
 
 export const commentSchema = v.object({
 	id: v.string(),
@@ -14,6 +14,6 @@ export type Comment = v.InferOutput<typeof commentSchema>;
 
 export const commentsCollection = createCollection({
 	id: 'comments',
-	source: new MemoryAdapter<Comment>('id'),
-	keyOf: (doc) => doc.id
+	sourceType: MemoryCollectionAdapter,
+	keyOf: (doc: Comment) => doc.id
 });

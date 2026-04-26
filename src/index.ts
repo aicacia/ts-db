@@ -1,42 +1,58 @@
-// Core types
+// Collection
 export type {
-	AdapterStatus,
-	FieldPath,
-	SourceAdapter,
-	UnsubscribeFn,
-} from "./types/index.js";
+	CollectionConfig,
+	CollectionInterface,
+} from "./collection/Collection.js";
+export { Collection, createCollection } from "./collection/Collection.js";
 
-// Collection types and API
-export type { CollectionConfig, ICollection } from "./collection/index.js";
-export { Collection, createCollection } from "./collection/index.js";
-
-// Singleton types and API
-export type { SingletonConfig, ISingleton } from "./singleton/index.js";
-export { Singleton, createSingleton } from "./singleton/index.js";
-
-// Query module public API
-export * from "./query/index.js";
+// Singleton
+export type {
+	SingletonConfig,
+	SingletonInterface,
+} from "./singleton/Singleton.js";
+export { Singleton, createSingleton } from "./singleton/Singleton.js";
 
 // Adapters
-export {
-	MemoryAdapter,
-	MemorySingletonAdapter,
-	HttpSourceAdapter,
-} from "./adapters/index.js";
+export { MemoryCollectionAdapter } from "./adapters/MemoryCollectionAdapter.js";
+export { MemorySingletonAdapter } from "./adapters/MemorySingletonAdapter.js";
+export type { MemoryCollectionAdapterOptions } from "./adapters/MemoryCollectionAdapter.js";
+export type { MemorySingletonAdapterOptions } from "./adapters/MemorySingletonAdapter.js";
+
+// Query/CTE
+export type { QueryBuilderInterface } from "./query/QueryBuilder.js";
 export type {
-	HttpSourceAdapterConfig,
-	HttpSourceAdapterLiveConfig,
-	HttpOperation,
-	LiveTransportMethod,
-} from "./adapters/index.js";
-
-// Utilities
-export { getFieldValue } from "./utils/index.js";
-
-// Test utilities
+	CTE,
+	CTEFilter,
+	CTEOrderBy,
+	CTEJoin,
+	CTEComparisonOperator,
+} from "./query/cte.js";
+export type {
+	QueryExecutor,
+	QueryJoinDescriptor,
+	QuerySubscription,
+} from "./query/executor.js";
 export {
-	createTestCollection,
-	createTestSingleton,
-	type TestCollectionResult,
-	type TestSingletonResult,
-} from "./test-utils/index.js";
+	createCTE,
+	getCTEIdentity,
+	compare,
+	equal,
+	notEqual,
+	greaterThan,
+	lessThan,
+	greaterThanOrEqual,
+	lessThanOrEqual,
+	inOperator,
+	contains,
+	containsIgnoreCase,
+	fuzzyContains,
+	includes,
+} from "./query/cte.js";
+export { D2Executor } from "./query/D2Executor.js";
+
+// Field utilities
+export type { FieldPath } from "./field.js";
+export { getFieldValue } from "./field.js";
+
+// Core types
+export type { AdapterStatus, UnsubscribeFn, Constructor } from "./types.js";

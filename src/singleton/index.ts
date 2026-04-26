@@ -1,2 +1,2 @@
-export type { SingletonConfig, ISingleton } from "./singleton.js";
-export { Singleton, createSingleton } from "./singleton.js";
+export type { SingletonConfig, SingletonInterface } from "./Singleton.js";
+export { Singleton, createSingleton } from "./Singleton.js";

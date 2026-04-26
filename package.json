@@ -17,10 +17,10 @@
 			"require": "./cjs/index.js"
 		},
 		"./svelte": {
-			"svelte": "./src/svelte/index.svelte.ts",
+			"svelte": "./esm/svelte/index.svelte.js",
 			"types": "./types/svelte/index.d.ts",
-			"import": "./esm/svelte/index.js",
-			"require": "./cjs/svelte/index.js"
+			"import": "./esm/svelte/index.svelte.js",
+			"require": "./cjs/svelte/index.svelte.js"
 		},
 		"./package.json": "./package.json"
 	},
@@ -42,10 +42,10 @@
 		"build": "pnpm run clean && pnpm run buildTS && pnpm run buildCJS && pnpm run buildBrowser",
 		"doc": "pnpm run build:docs",
 		"prepublishOnly": "pnpm run build",
-		"test": "pnpm run -s tape:runner -- src/**/*.test.{ts,tsx} | pnpm exec tap-spec",
-		"bench": "pnpm run -s tape:runner -- src/**/*.benchmark.{ts,tsx} | pnpm exec tap-spec",
-		"coverage": "c8 --check-coverage --lines 75 --reporter=lcov --reporter=text pnpm run -s tape:runner -- src/**/*.test.{ts,tsx} | pnpm exec tap-spec",
-		"coverageHTML": "c8 --check-coverage --lines 75 --reporter=lcov --reporter=html pnpm run -s tape:runner -- src/**/*.test.{ts,tsx} | pnpm exec tap-spec",
+		"test": "pnpm run -s tape:runner -- src/**/*.test.ts | pnpm exec tap-spec",
+		"bench": "pnpm run -s tape:runner -- src/**/*.benchmark.ts | pnpm exec tap-spec",
+		"coverage": "c8 --check-coverage --lines 75 --reporter=lcov --reporter=text pnpm run -s tape:runner -- src/**/*.test.ts | pnpm exec tap-spec",
+		"coverageHTML": "c8 --check-coverage --lines 75 --reporter=lcov --reporter=html pnpm run -s tape:runner -- src/**/*.test.ts | pnpm exec tap-spec",
 		"clean": "rm -rf esm cjs browser types .nyc_output coverage tsconfig.tsbuildinfo tsconfig.cjs.tsbuildinfo",
 		"lint": "biome lint ./src",
 		"format": "biome format --write .",
