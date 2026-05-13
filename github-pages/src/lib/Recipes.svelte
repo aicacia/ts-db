@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { recipesCollection } from './collections/recipes.js';
 	import { commentsCollection } from './collections/comments.js';
-	import { collection } from '@aicacia/db/svelte';
+	import { collection } from '@aicacia/orm/svelte';
 	import RecipeForm from './RecipeForm.svelte';
 	import Modal from './Modal.svelte';
 	import type { Recipe } from './collections/recipes.js';

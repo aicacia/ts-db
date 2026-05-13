@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import '../app.css';
+	import { onMount, onDestroy } from 'svelte';
 	import faviconSvg from '$lib/assets/favicon.svg';
 	import { userSettingsSingleton } from '$lib/collections/userSettings.js';
-	import { singleton } from '@aicacia/db/svelte';
+	import { singleton } from '@aicacia/orm/svelte';
 
 	const { children } = $props();
 

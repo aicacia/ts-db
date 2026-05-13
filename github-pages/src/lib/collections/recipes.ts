@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { createCollection, MemoryCollectionAdapter } from '@aicacia/db';
+import { createCollection, MemoryCollectionAdapter } from '@aicacia/orm';
 
 export const metricUnitSchema = v.picklist(['g', 'kg', 'ml', 'l']);
 

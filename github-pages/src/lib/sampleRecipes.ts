@@ -153,7 +153,6 @@ export async function populateSampleRecipes(): Promise<void> {
 			createdAt: new Date(),
 			updatedAt: new Date()
 		});
-		await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate async delay
 	}
 }
 

@@ -1,10 +1,10 @@
 {
-	"name": "@aicacia/db",
+	"name": "@aicacia/orm",
 	"version": "0.1.0",
-	"description": "databases for local first software",
+	"description": "ORM for local first software",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/aicacia/ts-db"
+		"url": "https://github.com/aicacia/ts-orm"
 	},
 	"type": "module",
 	"module": "esm/index.js",
@@ -53,12 +53,12 @@
 		"ci:lint": "pnpm lint && pnpm -r lint",
 		"ci:format": "pnpm format && pnpm -r format",
 		"ci:format:check": "pnpm -r format:check",
-		"github-pages:dev": "pnpm --filter @aicacia/db-github-pages dev",
+		"github-pages:dev": "pnpm --filter @aicacia/orm-github-pages dev",
 		"preCommit": "pnpm run ci:format && pnpm run ci:lint && pnpm run coverage",
 		"prepare": "husky"
 	},
 	"keywords": [
-		"db",
+		"orm",
 		"database",
 		"local",
 		"first",
@@ -80,16 +80,16 @@
 		"fake-indexeddb": "^6.2.5",
 		"husky": "^9.1.7",
 		"nyc": "^17.1.0",
-		"rollup": "^4.60.1",
+		"rollup": "^4.60.3",
 		"rollup-plugin-esm-import-to-url": "^2.1.0",
-		"svelte": "^5.55.3",
+		"svelte": "^5.55.5",
 		"tap-nyc": "^1.0.3",
 		"tap-spec": "^5.0.0",
 		"tape": "^5.9.0",
 		"ts-node": "^10.9.2",
 		"tslib": "^2.8.1",
-		"typedoc": "^0.28.18",
-		"typescript": "^6.0.2"
+		"typedoc": "^0.28.19",
+		"typescript": "^6.0.3"
 	},
 	"peerDependencies": {
 		"svelte": "5",

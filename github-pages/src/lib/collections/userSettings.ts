@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { createSingleton, MemorySingletonAdapter } from '@aicacia/db';
+import { createSingleton, MemorySingletonAdapter } from '@aicacia/orm';
 
 export const userSettingsSchema = v.object({
 	theme: v.pipe(v.string(), v.picklist(['light', 'dark'])),

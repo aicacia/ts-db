@@ -8,10 +8,10 @@ const libraryRoot = new URL('..', import.meta.url).pathname;
 
 const alias = [
 	{
-		find: /^@aicacia\/db\/svelte$/,
+		find: /^@aicacia\/orm\/svelte$/,
 		replacement: path.resolve(libraryRoot, 'src/svelte/index.svelte.ts')
 	},
-	{ find: /^@aicacia\/db$/, replacement: path.resolve(libraryRoot, 'src/index.ts') }
+	{ find: /^@aicacia\/orm$/, replacement: path.resolve(libraryRoot, 'src/index.ts') }
 ];
 
 export default defineConfig({
