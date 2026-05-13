@@ -10,8 +10,8 @@
 </script>
 
 <script lang="ts">
-	import { onMount, onDestroy, type Snippet } from 'svelte';
-	import { portal } from './actions/portal';
+	import { onDestroy, onMount, type Snippet } from "svelte";
+	import { portal } from "./actions/portal";
 
 	const {
 		onClose,
@@ -19,7 +19,7 @@
 		closeOnEscape = $bindable(true),
 		labelledby,
 		describedby,
-		children
+		children,
 	}: ModalProps = $props();
 
 	let modalEl: HTMLElement | null = null;
@@ -37,7 +37,7 @@
 	}
 
 	function onKeydown(e: KeyboardEvent) {
-		if (closeOnEscape && e.key === 'Escape') {
+		if (closeOnEscape && e.key === "Escape") {
 			e.preventDefault();
 			close();
 		}
@@ -45,34 +45,34 @@
 
 	onMount(() => {
 		previousActive = document.activeElement as HTMLElement | null;
-		document.body.style.overflow = 'hidden';
+		document.body.style.overflow = "hidden";
 
 		// Hide background from assistive tech
-		backgroundEl = document.querySelector('main') as HTMLElement | null;
+		backgroundEl = document.querySelector("main") as HTMLElement | null;
 		if (backgroundEl) {
-			previousAriaHidden = backgroundEl.getAttribute('aria-hidden');
-			if (!backgroundEl.hasAttribute('aria-hidden')) {
-				backgroundEl.setAttribute('aria-hidden', 'true');
+			previousAriaHidden = backgroundEl.getAttribute("aria-hidden");
+			if (!backgroundEl.hasAttribute("aria-hidden")) {
+				backgroundEl.setAttribute("aria-hidden", "true");
 			}
 		}
 
 		if (modalEl) {
 			const focusable = modalEl.querySelector<HTMLElement>(
-				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
 			);
 			focusable?.focus();
 		}
 	});
 
 	onDestroy(() => {
-		document.body.style.overflow = '';
+		document.body.style.overflow = "";
 		previousActive?.focus();
 
 		if (backgroundEl) {
 			if (previousAriaHidden === null) {
-				backgroundEl.removeAttribute('aria-hidden');
+				backgroundEl.removeAttribute("aria-hidden");
 			} else if (previousAriaHidden !== null) {
-				backgroundEl.setAttribute('aria-hidden', previousAriaHidden);
+				backgroundEl.setAttribute("aria-hidden", previousAriaHidden);
 			}
 		}
 	});
@@ -80,7 +80,10 @@
 
 <svelte:document onkeydown={onKeydown} />
 
-<div use:portal class="fixed inset-0 z-50 grid min-h-screen touch-pan-y place-items-center py-8">
+<div
+	use:portal
+	class="fixed inset-0 z-50 grid min-h-screen touch-pan-y place-items-center py-8"
+>
 	<div
 		class="absolute inset-0 touch-pan-y bg-black/50"
 		onclick={onBackdropClick}
@@ -88,7 +91,7 @@
 	></div>
 	<div
 		bind:this={modalEl}
-		class="pointer-events-auto relative z-10 mx-4 max-h-[calc(100vh_-_4rem)] w-full max-w-2xl touch-auto overflow-y-auto rounded bg-white p-6 shadow-lg [-webkit-overflow-scrolling:touch]"
+		class="pointer-events-auto relative z-10 mx-4 max-h-[calc(100vh-4rem)] w-full max-w-2xl touch-auto overflow-y-auto rounded bg-white p-6 shadow-lg [-webkit-overflow-scrolling:touch]"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby={labelledby}

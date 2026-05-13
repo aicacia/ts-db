@@ -1,13 +1,14 @@
 import test from "tape";
-import { createCollection } from "./Collection.js";
 import { MemoryCollectionAdapter } from "../adapters/MemoryCollectionAdapter.js";
+import { createCollection } from "./Collection.js";
 
 test("Collection: delegates create/update/delete/subscribe/getStatus/getSource/getKeyOf through MemoryCollectionAdapter", async (t) => {
 	const collection = createCollection<
 		{ id: string; name: string },
-		import(
-			"../adapters/MemoryCollectionAdapter.js",
-		).MemoryCollectionAdapterOptions<{ id: string; name: string }>
+		import("../adapters/MemoryCollectionAdapter.js").MemoryCollectionAdapterOptions<{
+			id: string;
+			name: string;
+		}>
 	>({
 		id: "test",
 		sourceType: MemoryCollectionAdapter,
@@ -54,9 +55,10 @@ test("Collection: delegates create/update/delete/subscribe/getStatus/getSource/g
 test("Collection.query: builds a QueryBuilder from adapter docs", (t) => {
 	const collection = createCollection<
 		{ id: string; name: string },
-		import(
-			"../adapters/MemoryCollectionAdapter.js",
-		).MemoryCollectionAdapterOptions<{ id: string; name: string }>
+		import("../adapters/MemoryCollectionAdapter.js").MemoryCollectionAdapterOptions<{
+			id: string;
+			name: string;
+		}>
 	>({
 		id: "test-query",
 		sourceType: MemoryCollectionAdapter,

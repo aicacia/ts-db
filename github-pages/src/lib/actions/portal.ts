@@ -4,6 +4,6 @@ export function portal(node: HTMLElement, target: HTMLElement = document.body) {
 	return {
 		destroy() {
 			node.remove();
-		}
+		},
 	};
 }

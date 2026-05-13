@@ -2,8 +2,8 @@ import type {
 	CollectionAdapter,
 	CollectionAdapterOptions,
 } from "../collection/Collection.js";
-import type { AdapterStatus, UnsubscribeFn } from "../types.js";
 import type { CTE } from "../query/cte.js";
+import type { AdapterStatus, UnsubscribeFn } from "../types.js";
 
 export interface MemoryCollectionAdapterOptions<T>
 	extends CollectionAdapterOptions<T> {
@@ -29,7 +29,7 @@ export class MemoryCollectionAdapter<T> implements CollectionAdapter<T> {
 	subscribe(
 		onUpdate: (docs: T[]) => void,
 		onError: (error: Error) => void,
-		query: CTE<T>,
+		_query: CTE<T>,
 	): UnsubscribeFn {
 		const subscriber = { onUpdate, onError };
 		this.#subscribers.add(subscriber);

@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { recipesCollection } from './collections/recipes.js';
-	import { commentsCollection } from './collections/comments.js';
-	import { collection } from '@aicacia/orm/svelte';
-	import RecipeForm from './RecipeForm.svelte';
-	import Modal from './Modal.svelte';
-	import type { Recipe } from './collections/recipes.js';
+	import { collection } from "@aicacia/orm/svelte";
+	import { commentsCollection } from "./collections/comments.js";
+	import type { Recipe } from "./collections/recipes.js";
+	import { recipesCollection } from "./collections/recipes.js";
+	import Modal from "./Modal.svelte";
+	import RecipeForm from "./RecipeForm.svelte";
 
-	let search = $state('');
+	let search = $state("");
 	const recipesWithComments = $derived(
 		collection(
 			(search
 				? recipesCollection
 						.query()
-						.containsIgnoreCase('title', search.trim())
-						.orderBy('updatedAt', 'desc')
-				: recipesCollection.query().orderBy('updatedAt', 'desc')
-			).join(commentsCollection, 'id', 'recipeId')
-		)
+						.containsIgnoreCase("title", search.trim())
+						.orderBy("updatedAt", "desc")
+				: recipesCollection.query().orderBy("updatedAt", "desc")
+			).join(commentsCollection, "id", "recipeId"),
+		),
 	);
 	let showForm = $state(false);
 	let editing: Recipe | null = $state(null);
@@ -32,20 +32,20 @@
 	}
 
 	async function handleSave(payload: Partial<Recipe>) {
-		if (editing && editing.id) {
+		if (editing?.id) {
 			await recipesCollection.update(editing.id, {
 				...payload,
-				updatedAt: new Date()
+				updatedAt: new Date(),
 			});
 		} else {
 			const recipe: Recipe = {
 				id: Math.random().toString(36).substring(2),
-				title: payload.title || '',
-				description: payload.description || '',
+				title: payload.title || "",
+				description: payload.description || "",
 				ingredients: payload.ingredients || [],
 				instructions: payload.instructions || [],
 				createdAt: new Date(),
-				updatedAt: new Date()
+				updatedAt: new Date(),
 			};
 			await recipesCollection.create(recipe);
 		}
@@ -59,7 +59,7 @@
 	}
 
 	async function handleDelete(id: string) {
-		if (confirm('Delete this recipe?')) {
+		if (confirm("Delete this recipe?")) {
 			await recipesCollection.delete(id);
 		}
 	}
@@ -76,8 +76,10 @@
 				placeholder="Search recipes..."
 			/>
 			<button
+				type="button"
 				onclick={openNew}
-				class="ml-2 rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700">New Recipe</button
+				class="ml-2 rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
+				>New Recipe</button
 			>
 		</div>
 	</div>
@@ -86,7 +88,11 @@
 		<Modal onClose={handleCancel}>
 			<div class="mx-auto max-w-4xl p-6">
 				<h2 id="recipe-modal-title" class="sr-only">Recipe form</h2>
-				<RecipeForm initial={editing} onSave={handleSave} onCancel={handleCancel} />
+				<RecipeForm
+					initial={editing}
+					onSave={handleSave}
+					onCancel={handleCancel}
+				/>
 			</div>
 		</Modal>
 	{/if}
@@ -103,10 +109,13 @@
 							</div>
 							<div class="flex gap-2">
 								<button
+									type="button"
 									onclick={() => openEdit(recipe)}
-									class="rounded bg-gray-100 px-2 py-1 text-sm hover:bg-gray-200">Edit</button
+									class="rounded bg-gray-100 px-2 py-1 text-sm hover:bg-gray-200"
+									>Edit</button
 								>
 								<button
+									type="button"
 									onclick={() => handleDelete(recipe.id)}
 									class="rounded bg-red-100 px-2 py-1 text-sm text-red-700 hover:bg-red-200"
 									>Delete</button
@@ -118,7 +127,8 @@
 						<ul class="mb-2">
 							{#each recipe.ingredients as ingredient, index (index)}
 								<li class="text-sm">
-									{ingredient.quantity.value}{ingredient.quantity.unit} — {ingredient.item.name}
+									{ingredient.quantity.value}{ingredient.quantity.unit} — {ingredient
+										.item.name}
 								</li>
 							{/each}
 						</ul>
@@ -134,7 +144,9 @@
 								<ul class="space-y-2">
 									{#each recipe.comments as comment (comment.id)}
 										<li class="rounded bg-white p-3 shadow-sm">
-											<p class="text-sm font-semibold text-gray-900">{comment.author}</p>
+											<p class="text-sm font-semibold text-gray-900">
+												{comment.author}
+											</p>
 											<p class="text-sm text-gray-600">{comment.text}</p>
 										</li>
 									{/each}

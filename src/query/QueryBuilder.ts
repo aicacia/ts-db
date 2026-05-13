@@ -1,27 +1,27 @@
+import type {
+	CollectionAdapter,
+	CollectionInterface,
+} from "../collection/Collection.js";
 import type { FieldPath } from "../field.js";
-import type { CTE, CTEFilter, CTEComparisonOperator } from "./cte.js";
+import type { UnsubscribeFn } from "../types.js";
+import type { CTE, CTEComparisonOperator, CTEFilter } from "./cte.js";
 import {
-	createCTE,
+	and,
 	compare,
-	equal,
-	notEqual,
-	greaterThan,
-	lessThan,
-	greaterThanOrEqual,
-	lessThanOrEqual,
-	inOperator,
 	contains,
 	containsIgnoreCase,
+	createCTE,
+	equal,
 	fuzzyContains,
+	greaterThan,
+	greaterThanOrEqual,
 	includes,
-	and,
+	inOperator,
+	lessThan,
+	lessThanOrEqual,
+	notEqual,
 	or,
 } from "./cte.js";
-import type { UnsubscribeFn } from "../types.js";
-import type {
-	CollectionInterface,
-	CollectionAdapter,
-} from "../collection/Collection.js";
 import { D2Executor } from "./D2Executor.js";
 import type { QueryExecutor, QueryJoinDescriptor } from "./executor.js";
 

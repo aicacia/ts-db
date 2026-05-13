@@ -1,8 +1,8 @@
 import test from "tape";
-import { D2Executor } from "./D2Executor.js";
-import { QueryBuilder } from "./QueryBuilder.js";
-import type { QueryExecutor } from "./executor.js";
 import { createCTE, equal } from "./cte.js";
+import { D2Executor } from "./D2Executor.js";
+import type { QueryExecutor } from "./executor.js";
+import { QueryBuilder } from "./QueryBuilder.js";
 
 class StubExecutor<T> implements QueryExecutor<T> {
 	execute() {

@@ -47,14 +47,11 @@
 		"coverage": "c8 --check-coverage --lines 75 --reporter=lcov --reporter=text pnpm run -s tape:runner -- src/**/*.test.ts | pnpm exec tap-spec",
 		"coverageHTML": "c8 --check-coverage --lines 75 --reporter=lcov --reporter=html pnpm run -s tape:runner -- src/**/*.test.ts | pnpm exec tap-spec",
 		"clean": "rm -rf esm cjs browser types .nyc_output coverage tsconfig.tsbuildinfo tsconfig.cjs.tsbuildinfo",
-		"lint": "biome lint ./src",
-		"format": "biome format --write .",
-		"format:check": "biome format .",
-		"ci:lint": "pnpm lint && pnpm -r lint",
-		"ci:format": "pnpm format && pnpm -r format",
-		"ci:format:check": "pnpm -r format:check",
+		"lint": "biome lint --write",
+		"check": "biome check --write",
+		"format": "biome format --write",
 		"github-pages:dev": "pnpm --filter @aicacia/orm-github-pages dev",
-		"preCommit": "pnpm run ci:format && pnpm run ci:lint && pnpm run coverage",
+		"preCommit": "pnpm run format && pnpm run check && pnpm run lint && pnpm run coverage",
 		"prepare": "husky"
 	},
 	"keywords": [
@@ -70,7 +67,7 @@
 	"license": "(MIT OR Apache-2.0)",
 	"readmeFilename": "README.md",
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
+		"@biomejs/biome": "^2.4.15",
 		"@rollup/plugin-commonjs": "^28.0.9",
 		"@rollup/plugin-node-resolve": "^15.3.1",
 		"@rollup/plugin-terser": "^0.4.4",
@@ -102,8 +99,16 @@
 		"eventemitter3": "^5.0.4"
 	},
 	"nyc": {
-		"include": ["src"],
-		"exclude": ["src/**/*.test.*", "src/**/*.benchmark.*"],
-		"extension": [".ts", ".tsx"]
+		"include": [
+			"src"
+		],
+		"exclude": [
+			"src/**/*.test.*",
+			"src/**/*.benchmark.*"
+		],
+		"extension": [
+			".ts",
+			".tsx"
+		]
 	}
 }

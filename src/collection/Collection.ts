@@ -1,8 +1,8 @@
+import type { CTE } from "../query/cte.js";
+import { createCTE } from "../query/cte.js";
 import type { QueryBuilderInterface } from "../query/QueryBuilder.js";
 import { QueryBuilder } from "../query/QueryBuilder.js";
 import type { AdapterStatus, Constructor, UnsubscribeFn } from "../types.js";
-import type { CTE } from "../query/cte.js";
-import { createCTE } from "../query/cte.js";
 
 export interface CollectionAdapter<T> {
 	subscribe(
@@ -58,7 +58,7 @@ export class Collection<
 	readonly #source: CollectionAdapter<T>;
 	readonly #keyOf: (doc: T) => string;
 
-	constructor(private readonly config: CollectionConfig<T, O>) {
+	constructor(readonly config: CollectionConfig<T, O>) {
 		const sourceOptions =
 			config.sourceOptions === undefined
 				? ({ keyOf: config.keyOf } as O)

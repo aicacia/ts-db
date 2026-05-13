@@ -1,10 +1,6 @@
 import type { CTE } from "./cte.js";
 import { D2Executor } from "./D2Executor.js";
-import type {
-	QueryExecutor,
-	QueryJoinDescriptor,
-	QuerySubscription,
-} from "./executor.js";
+import type { QueryJoinDescriptor, QuerySubscription } from "./executor.js";
 
 export function createIncrementalQuery<T>(
 	cte: CTE<T>,

@@ -1,4 +1,4 @@
-import type { AdapterStatus, UnsubscribeFn, Constructor } from "../types.js";
+import type { AdapterStatus, Constructor, UnsubscribeFn } from "../types.js";
 
 export interface SingletonAdapter<T> {
 	subscribe(
@@ -32,7 +32,7 @@ export class Singleton<T, O extends {} = object>
 {
 	readonly #source: SingletonAdapter<T>;
 
-	constructor(private readonly config: SingletonConfig<T, O>) {
+	constructor(readonly config: SingletonConfig<T, O>) {
 		const sourceOptions =
 			config.sourceOptions === undefined ? ({} as O) : config.sourceOptions;
 		this.#source = new config.sourceType(sourceOptions);

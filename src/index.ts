@@ -1,58 +1,55 @@
 // Collection
+
+export type { MemoryCollectionAdapterOptions } from "./adapters/MemoryCollectionAdapter.js";
+// Adapters
+export { MemoryCollectionAdapter } from "./adapters/MemoryCollectionAdapter.js";
+export type { MemorySingletonAdapterOptions } from "./adapters/MemorySingletonAdapter.js";
+export { MemorySingletonAdapter } from "./adapters/MemorySingletonAdapter.js";
 export type {
 	CollectionConfig,
 	CollectionInterface,
 } from "./collection/Collection.js";
 export { Collection, createCollection } from "./collection/Collection.js";
-
-// Singleton
-export type {
-	SingletonConfig,
-	SingletonInterface,
-} from "./singleton/Singleton.js";
-export { Singleton, createSingleton } from "./singleton/Singleton.js";
-
-// Adapters
-export { MemoryCollectionAdapter } from "./adapters/MemoryCollectionAdapter.js";
-export { MemorySingletonAdapter } from "./adapters/MemorySingletonAdapter.js";
-export type { MemoryCollectionAdapterOptions } from "./adapters/MemoryCollectionAdapter.js";
-export type { MemorySingletonAdapterOptions } from "./adapters/MemorySingletonAdapter.js";
-
-// Query/CTE
-export type { QueryBuilderInterface } from "./query/QueryBuilder.js";
+// Field utilities
+export type { FieldPath } from "./field.js";
+export { getFieldValue } from "./field.js";
 export type {
 	CTE,
-	CTEFilter,
-	CTEOrderBy,
-	CTEJoin,
 	CTEComparisonOperator,
+	CTEFilter,
+	CTEJoin,
+	CTEOrderBy,
 } from "./query/cte.js";
+export {
+	compare,
+	contains,
+	containsIgnoreCase,
+	createCTE,
+	equal,
+	fuzzyContains,
+	getCTEIdentity,
+	greaterThan,
+	greaterThanOrEqual,
+	includes,
+	inOperator,
+	lessThan,
+	lessThanOrEqual,
+	notEqual,
+} from "./query/cte.js";
+export { D2Executor } from "./query/D2Executor.js";
 export type {
 	QueryExecutor,
 	QueryJoinDescriptor,
 	QuerySubscription,
 } from "./query/executor.js";
-export {
-	createCTE,
-	getCTEIdentity,
-	compare,
-	equal,
-	notEqual,
-	greaterThan,
-	lessThan,
-	greaterThanOrEqual,
-	lessThanOrEqual,
-	inOperator,
-	contains,
-	containsIgnoreCase,
-	fuzzyContains,
-	includes,
-} from "./query/cte.js";
-export { D2Executor } from "./query/D2Executor.js";
-
-// Field utilities
-export type { FieldPath } from "./field.js";
-export { getFieldValue } from "./field.js";
+// Query/CTE
+export type { QueryBuilderInterface } from "./query/QueryBuilder.js";
+// Singleton
+export type {
+	SingletonConfig,
+	SingletonInterface,
+} from "./singleton/Singleton.js";
+export { createSingleton, Singleton } from "./singleton/Singleton.js";
 
 // Core types
-export type { AdapterStatus, UnsubscribeFn, Constructor } from "./types.js";
+export type { AdapterStatus, Constructor, UnsubscribeFn } from "./types.js";

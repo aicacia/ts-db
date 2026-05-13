@@ -1,6 +1,6 @@
-import type { CTE } from "./cte.js";
-import type { UnsubscribeFn } from "../types.js";
 import type { CollectionInterface } from "../collection/Collection.js";
+import type { UnsubscribeFn } from "../types.js";
+import type { CTE } from "./cte.js";
 
 export interface QueryJoinDescriptor {
 	collection: CollectionInterface<unknown>;

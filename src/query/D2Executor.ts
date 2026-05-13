@@ -1,31 +1,29 @@
-import type {
-	CTE,
-	CTEComparisonFilter,
-	CTEFilter,
-	CTELogicalFilter,
-} from "./cte.js";
-import type { FieldPath } from "../field.js";
-import { getFieldValue } from "../field.js";
-import { D2, filter } from "@electric-sql/d2ts";
+import { fuzzyEquals } from "@aicacia/string-fuzzy_equals";
 import type {
 	IStreamBuilder,
 	Message,
 	MultiSetArray,
 	RootStreamBuilder,
 } from "@electric-sql/d2ts";
-import { MessageType } from "@electric-sql/d2ts";
-import { fuzzyEquals } from "@aicacia/string-fuzzy_equals";
-import {
-	compareValues,
-	compareOrderValues,
-	stableSortWithTieBreaker,
-} from "./sort.js";
-import type { UnsubscribeFn } from "../types.js";
+import { D2, filter, MessageType } from "@electric-sql/d2ts";
+import type { FieldPath } from "../field.js";
+import { getFieldValue } from "../field.js";
+import type {
+	CTE,
+	CTEComparisonFilter,
+	CTEFilter,
+	CTELogicalFilter,
+} from "./cte.js";
 import type {
 	QueryExecutor,
 	QueryJoinDescriptor,
 	QuerySubscription,
 } from "./executor.js";
+import {
+	compareOrderValues,
+	compareValues,
+	stableSortWithTieBreaker,
+} from "./sort.js";
 
 function createComparisonPredicate<T>(
 	filter: CTEComparisonFilter<T>,

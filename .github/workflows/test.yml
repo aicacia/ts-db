@@ -28,5 +28,5 @@ jobs:
           cache: pnpm
       - run: npm install -g pnpm@10
       - run: pnpm install
-      - run: pnpm ci:lint && pnpm ci:format:check
+      - run: pnpm lint && pnpm check && pnpm format
       - run: pnpm coverage

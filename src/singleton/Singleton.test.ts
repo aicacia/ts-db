@@ -1,6 +1,6 @@
 import test from "tape";
-import { createSingleton } from "./Singleton.js";
 import { MemorySingletonAdapter } from "../adapters/MemorySingletonAdapter.js";
+import { createSingleton } from "./Singleton.js";
 
 test("Singleton: delegates subscribe/set/update through MemorySingletonAdapter", async (t) => {
 	const singleton = createSingleton({

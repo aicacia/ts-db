@@ -1,6 +1,6 @@
 import test from "tape";
+import { containsIgnoreCase, createCTE, greaterThan } from "./cte.js";
 import { createIncrementalQuery } from "./d2ts.js";
-import { createCTE, equal, greaterThan, containsIgnoreCase } from "./cte.js";
 import { QueryBuilder } from "./QueryBuilder.js";
 
 test("createIncrementalQuery: filters and orderBy produce expected results", (t) => {

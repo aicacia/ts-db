@@ -1,5 +1,5 @@
-import type { CTEOrderBy } from "./cte.js";
 import { getFieldValue } from "../field.js";
+import type { CTEOrderBy } from "./cte.js";
 
 export function compareValues(a: unknown, b: unknown): number {
 	if (a === b) return 0;

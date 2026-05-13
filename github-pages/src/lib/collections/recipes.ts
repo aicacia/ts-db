@@ -1,21 +1,21 @@
-import * as v from 'valibot';
-import { createCollection, MemoryCollectionAdapter } from '@aicacia/orm';
+import { createCollection, MemoryCollectionAdapter } from "@aicacia/orm";
+import * as v from "valibot";
 
-export const metricUnitSchema = v.picklist(['g', 'kg', 'ml', 'l']);
+export const metricUnitSchema = v.picklist(["g", "kg", "ml", "l"]);
 
 export const quantitySchema = v.object({
 	value: v.number(),
-	unit: metricUnitSchema
+	unit: metricUnitSchema,
 });
 
 export const itemSchema = v.object({
 	name: v.string(),
-	description: v.string()
+	description: v.string(),
 });
 
 export const ingredientSchema = v.object({
 	item: itemSchema,
-	quantity: quantitySchema
+	quantity: quantitySchema,
 });
 
 export const recipeSchema = v.object({
@@ -25,13 +25,13 @@ export const recipeSchema = v.object({
 	ingredients: v.array(ingredientSchema),
 	instructions: v.array(v.string()),
 	updatedAt: v.date(),
-	createdAt: v.date()
+	createdAt: v.date(),
 });
 
 export type Recipe = v.InferOutput<typeof recipeSchema>;
 
 export const recipesCollection = createCollection({
-	id: 'recipes',
+	id: "recipes",
 	sourceType: MemoryCollectionAdapter,
-	keyOf: (doc: Recipe) => doc.id
+	keyOf: (doc: Recipe) => doc.id,
 });

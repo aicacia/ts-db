@@ -1,93 +1,97 @@
 <script lang="ts">
-	import type { Recipe } from './collections/recipes.js';
+import type { Recipe } from "./collections/recipes.js";
 
-	const props = $props<{
-		initial?: Partial<Recipe> | null;
-		onSave?: (payload: Partial<Recipe>) => void;
-		onCancel?: () => void;
-	}>();
+const props = $props<{
+	initial?: Partial<Recipe> | null;
+	onSave?: (payload: Partial<Recipe>) => void;
+	onCancel?: () => void;
+}>();
 
-	type IngredientLocal = {
-		_id: string;
-		item: { name: string; description?: string };
-		quantity: { value: number; unit: string };
-	};
+type IngredientLocal = {
+	_id: string;
+	item: { name: string; description?: string };
+	quantity: { value: number; unit: string };
+};
 
-	type InstructionLocal = { _id: string; text: string };
+type InstructionLocal = { _id: string; text: string };
 
-	function genId() {
-		return Math.random().toString(36).substring(2, 9);
+function genId() {
+	return Math.random().toString(36).substring(2, 9);
+}
+
+let title = $state("");
+let description = $state("");
+
+let ingredients = $state<IngredientLocal[]>([]);
+
+let instructions = $state<InstructionLocal[]>([]);
+
+$effect(() => {
+	const value = props.initial;
+	title = value?.title ?? "";
+	description = value?.description ?? "";
+	ingredients = value?.ingredients
+		? value.ingredients.map((ing: IngredientLocal) => ({
+				_id: genId(),
+				item: { ...ing.item },
+				quantity: { ...ing.quantity },
+			}))
+		: [];
+	instructions = value?.instructions
+		? value.instructions.map((ins: string) => ({ _id: genId(), text: ins }))
+		: [];
+});
+
+// Derived cleaned outputs (use $derived for computed values)
+const cleanedIngredients = $derived(
+	ingredients.map((ing) => {
+		const { _id, ...rest } = ing;
+		void _id;
+		return rest;
+	}),
+);
+
+const cleanedInstructions = $derived(instructions.map((ins) => ins.text));
+
+function addIngredient() {
+	ingredients = [
+		...ingredients,
+		{
+			_id: genId(),
+			item: { name: "", description: "" },
+			quantity: { value: 0, unit: "g" },
+		},
+	];
+}
+
+function removeIngredient(id: string) {
+	ingredients = ingredients.filter((ing) => ing._id !== id);
+}
+
+function addInstruction() {
+	instructions = [...instructions, { _id: genId(), text: "" }];
+}
+
+function removeInstruction(id: string) {
+	instructions = instructions.filter((ins) => ins._id !== id);
+}
+
+function save(e?: SubmitEvent) {
+	e?.preventDefault();
+
+	if (typeof props.onSave === "function") {
+		props.onSave({
+			title,
+			description,
+			ingredients: cleanedIngredients,
+			instructions: cleanedInstructions,
+		});
 	}
+}
 
-	let title = $state('');
-	let description = $state('');
-
-	let ingredients = $state<IngredientLocal[]>([]);
-
-	let instructions = $state<InstructionLocal[]>([]);
-
-	$effect(() => {
-		const value = props.initial;
-		title = value?.title ?? '';
-		description = value?.description ?? '';
-		ingredients = value?.ingredients
-			? value.ingredients.map((ing: IngredientLocal) => ({
-					_id: genId(),
-					item: { ...ing.item },
-					quantity: { ...ing.quantity }
-				}))
-			: [];
-		instructions = value?.instructions
-			? value.instructions.map((ins: string) => ({ _id: genId(), text: ins }))
-			: [];
-	});
-
-	// Derived cleaned outputs (use $derived for computed values)
-	const cleanedIngredients = $derived(
-		ingredients.map((ing) => {
-			const { _id, ...rest } = ing;
-			void _id;
-			return rest;
-		})
-	);
-
-	const cleanedInstructions = $derived(instructions.map((ins) => ins.text));
-
-	function addIngredient() {
-		ingredients = [
-			...ingredients,
-			{ _id: genId(), item: { name: '', description: '' }, quantity: { value: 0, unit: 'g' } }
-		];
-	}
-
-	function removeIngredient(id: string) {
-		ingredients = ingredients.filter((ing) => ing._id !== id);
-	}
-
-	function addInstruction() {
-		instructions = [...instructions, { _id: genId(), text: '' }];
-	}
-
-	function removeInstruction(id: string) {
-		instructions = instructions.filter((ins) => ins._id !== id);
-	}
-
-	function save(e?: SubmitEvent) {
-		e?.preventDefault();
-
-		if (typeof props.onSave === 'function') {
-			props.onSave({
-				title,
-				description,
-				ingredients: cleanedIngredients,
-				instructions: cleanedInstructions
-			});
-		}
-	}
-
-	function cancel() {
-		if (typeof props.onCancel === 'function') props.onCancel();
-	}
+function cancel() {
+	if (typeof props.onCancel === "function") props.onCancel();
+}
 </script>
 
 <form onsubmit={save}>
