@@ -1,0 +1,114 @@
+{
+	"name": "@aicacia/orm",
+	"version": "0.1.0",
+	"description": "ORM for local first software",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/aicacia/ts-orm"
+	},
+	"type": "module",
+	"module": "esm/index.js",
+	"main": "cjs/index.js",
+	"types": "types/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./types/index.d.ts",
+			"import": "./esm/index.js",
+			"require": "./cjs/index.js"
+		},
+		"./svelte": {
+			"svelte": "./esm/svelte/index.svelte.js",
+			"types": "./types/svelte/index.d.ts",
+			"import": "./esm/svelte/index.svelte.js",
+			"require": "./cjs/svelte/index.svelte.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"files": [
+		"cjs/",
+		"esm/",
+		"types/",
+		"browser/",
+		"README.md",
+		"LICENSE-MIT",
+		"LICENSE-APACHE"
+	],
+	"scripts": {
+		"tape:runner": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' node_modules/tape/bin/tape",
+		"buildTS": "tsc -p tsconfig.json",
+		"buildCJS": "tsc -b tsconfig.cjs.json",
+		"buildBrowser": "rollup -c",
+		"build:docs": "typedoc",
+		"build": "pnpm run clean && pnpm run buildTS && pnpm run buildCJS && pnpm run buildBrowser",
+		"doc": "pnpm run build:docs",
+		"prepublishOnly": "pnpm run build",
+		"test": "pnpm run -s tape:runner -- src/**/*.test.ts | pnpm exec tap-spec",
+		"bench": "pnpm run -s tape:runner -- src/**/*.benchmark.ts | pnpm exec tap-spec",
+		"coverage": "c8 --check-coverage --lines 75 --reporter=lcov --reporter=text pnpm run -s tape:runner -- src/**/*.test.ts | pnpm exec tap-spec",
+		"coverageHTML": "c8 --check-coverage --lines 75 --reporter=lcov --reporter=html pnpm run -s tape:runner -- src/**/*.test.ts | pnpm exec tap-spec",
+		"clean": "rm -rf esm cjs browser types .nyc_output coverage tsconfig.tsbuildinfo tsconfig.cjs.tsbuildinfo",
+		"lint": "biome lint --write",
+		"check": "biome check --write",
+		"format": "biome format --write",
+		"github-pages:dev": "pnpm --filter @aicacia/orm-github-pages dev",
+		"preCommit": "pnpm run format && pnpm run check && pnpm run lint && pnpm run coverage",
+		"prepare": "husky"
+	},
+	"keywords": [
+		"orm",
+		"database",
+		"local",
+		"first",
+		"software",
+		"differential",
+		"computation"
+	],
+	"author": "Nathan Faucett",
+	"license": "(MIT OR Apache-2.0)",
+	"readmeFilename": "README.md",
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.15",
+		"@rollup/plugin-commonjs": "^28.0.9",
+		"@rollup/plugin-node-resolve": "^15.3.1",
+		"@rollup/plugin-terser": "^0.4.4",
+		"@rollup/plugin-typescript": "^12.3.0",
+		"@types/tape": "^5.8.1",
+		"c8": "^11.0.0",
+		"fake-indexeddb": "^6.2.5",
+		"husky": "^9.1.7",
+		"nyc": "^17.1.0",
+		"rollup": "^4.60.3",
+		"rollup-plugin-esm-import-to-url": "^2.1.0",
+		"svelte": "^5.55.5",
+		"tap-nyc": "^1.0.3",
+		"tap-spec": "^5.0.0",
+		"tape": "^5.9.0",
+		"ts-node": "^10.9.2",
+		"tslib": "^2.8.1",
+		"typedoc": "^0.28.19",
+		"typescript": "^6.0.3"
+	},
+	"peerDependencies": {
+		"svelte": "5",
+		"tslib": "2"
+	},
+	"dependencies": {
+		"@aicacia/string-fuzzy_equals": "^0.1.4",
+		"@electric-sql/d2ts": "^0.1.8",
+		"@standard-schema/spec": "^1.1.0",
+		"eventemitter3": "^5.0.4"
+	},
+	"nyc": {
+		"include": [
+			"src"
+		],
+		"exclude": [
+			"src/**/*.test.*",
+			"src/**/*.benchmark.*"
+		],
+		"extension": [
+			".ts",
+			".tsx"
+		]
+	}
+}
