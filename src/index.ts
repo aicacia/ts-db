@@ -6,6 +6,8 @@ export { MemoryCollectionAdapter } from "./adapters/MemoryCollectionAdapter.js";
 export type { MemorySingletonAdapterOptions } from "./adapters/MemorySingletonAdapter.js";
 export { MemorySingletonAdapter } from "./adapters/MemorySingletonAdapter.js";
 export type {
+	CollectionAdapter,
+	CollectionAdapterOptions,
 	CollectionConfig,
 	CollectionInterface,
 } from "./collection/Collection.js";
@@ -46,6 +48,7 @@ export type {
 export type { QueryBuilderInterface } from "./query/QueryBuilder.js";
 // Singleton
 export type {
+	SingletonAdapter,
 	SingletonConfig,
 	SingletonInterface,
 } from "./singleton/Singleton.js";
